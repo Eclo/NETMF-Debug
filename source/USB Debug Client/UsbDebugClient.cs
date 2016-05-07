@@ -434,25 +434,18 @@ namespace Microsoft.NetMicroFramework.Tools.UsbDebug
             //Debug.WriteLineIf(openResult, "Device open successfully.");
             Debug.WriteLineIf(!openResult, "Failed to open device.");
 
-            //if(openResult)
-            //{
-            //    MFUsbDevice = new MFDevice<UsbDevice>();
-            //    MFUsbDevice.Device.DeviceInformation = new UsbDeviceInformation(usbDeviceInfo.DeviceInformation, usbDeviceInfo.DeviceSelector);
-            //    MFUsbDevice.Device.Parent = this;
-            //    MFUsbDevice.Device.DebugEngine = new Engine(this, MFUsbDevice);
-            //}
-
             return openResult;
         }
 
         public void DisconnectDevice(MFDeviceBase device)
         {
-            //cast device object to UsbDeviceEntry
-            //UsbDeviceListEntry usbDevice = (UsbDeviceListEntry)device.DeviceObject;
+            if (FindDevice((device.DeviceObject as UsbDeviceInformation).InstanceId) != null)
+            {
+                //cast device object to UsbDeviceEntry
+                //UsbDeviceListEntry usbDevice = (UsbDeviceListEntry)device.DeviceObject;
 
-            EventHandlerForUsbDevice.Current.CloseDevice();
-
-            MFUsbDevice = null;
+                EventHandlerForUsbDevice.Current.CloseDevice();
+            }
         }
 
         /// <summary>
