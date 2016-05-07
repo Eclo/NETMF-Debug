@@ -14,34 +14,48 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using Microsoft.NetMicroFramework.Tools;
+using System;
+using System.Collections.ObjectModel;
+using System.Threading;
 using System.Threading.Tasks;
+using Windows.Storage.Streams;
 
 namespace Microsoft.SPOT.Debugger
 {
-    public class RuntimeValue_Class : RuntimeValue
+    public abstract class PortBase
     {
-        protected internal RuntimeValue_Class(Engine eng, WireProtocol.Commands.Debugging_Value handle) : base(eng, handle)
+        public override bool Equals(object obj)
         {
+            PortBase pd = obj as PortBase; if (pd == null) return false;
+
+            return (pd.UniqueId.Equals(UniqueId));
         }
 
-        public override bool IsReference { get { return false; } }
-        public override bool IsNull { get { return false; } }
-        public override bool IsPrimitive { get { return false; } }
-        public override bool IsValueType { get { return false; } }
-        public override bool IsArray { get { return false; } }
-        public override bool IsReflection { get { return false; } }
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
 
-        public override uint NumOfFields
+        public string PortName { get; internal set; }
+
+        public virtual object UniqueId
         {
             get
             {
-                return m_handle.m_size - 1;
+                return PortName;
             }
         }
 
-        public override async Task<RuntimeValue> GetFieldAsync(uint offset, uint fd)
+        public string PersistName
         {
-            return await m_eng.GetFieldValueAsync(this, offset, fd).ConfigureAwait(false);
+            get
+            {
+                return UniqueId.ToString();
+            }
         }
+
+        public abstract ObservableCollection<MFDeviceBase> MFDevices { get; protected set; }
+
     }
+
 }

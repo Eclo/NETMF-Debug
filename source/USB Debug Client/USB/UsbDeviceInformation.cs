@@ -25,16 +25,16 @@ namespace Microsoft.NetMicroFramework.Tools.UsbDebug
     /// This class is used by the UI to display device specific information so that
     /// the user can identify which device to use.
     /// </summary>
-    public class UsbDeviceListEntry
+    public class UsbDeviceInformation
     {
         private DeviceInformation device;
-        private String deviceSelector;
+        private string deviceSelector;
 
-        public String InstanceId
+        public string InstanceId
         {
             get
             {
-                return (String)device.Properties[UsbDeviceProperties.DeviceInstanceId];
+                return (string)device.Properties[UsbDeviceProperties.DeviceInstanceId];
             }
         }
 
@@ -46,7 +46,7 @@ namespace Microsoft.NetMicroFramework.Tools.UsbDebug
             }
         }
 
-        public String DeviceSelector
+        public string DeviceSelector
         {
             get
             {
@@ -59,7 +59,7 @@ namespace Microsoft.NetMicroFramework.Tools.UsbDebug
         /// </summary>
         /// <param name="deviceInformation"></param>
         /// <param name="deviceSelector">The AQS used to find this device</param>
-        public UsbDeviceListEntry(Windows.Devices.Enumeration.DeviceInformation deviceInformation, String deviceSelector)
+        public UsbDeviceInformation(Windows.Devices.Enumeration.DeviceInformation deviceInformation, String deviceSelector)
         {
             device = deviceInformation;
             this.deviceSelector = deviceSelector;

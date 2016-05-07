@@ -110,10 +110,11 @@
     <Compile Include="DebuggerEventSource.cs" />
     <Compile Include="Extensions\CancellationTokenExtensions.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
+    <Compile Include="MFDevice\MFDeviceBase.cs" />
     <Compile Include="MFDevice\IMFDevice.cs" />
     <Compile Include="MFDevice\MFDevice.cs" />
     <Compile Include="PortDefinitions\IPort.cs" />
-    <Compile Include="PortDefinitions\Port.cs" />
+    <Compile Include="PortDefinitions\PortBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Runtime\ReflectionDefinition.cs" />
     <Compile Include="Runtime\RunTimeValue.cs" />

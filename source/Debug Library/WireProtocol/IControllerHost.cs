@@ -19,15 +19,11 @@ using System.Threading.Tasks;
 
 namespace Microsoft.SPOT.Debugger.WireProtocol
 {
-    public interface IControllerHost<T> where T : MFDevice
+    public interface IControllerHost
     {
         DateTime LastActivity { get; set; }
 
         bool IsConnected { get; }
-
-        Task StartSessionAsync(T device);
-
-        void StopSession(T device);
 
         void SpuriousCharacters(byte[] buf, int offset, int count);
 

@@ -39,8 +39,8 @@
   <ItemGroup>
     <Compile Include="Exceptions\CouldntOpenNetMFDeviceException.cs" />
     <Compile Include="Exceptions\DebugSessionAlreadyOpenException.cs" />
-    <Compile Include="MFDevice\MFUsbDevice.cs" />
-    <Compile Include="USB\UsbDeviceListEntry.cs" />
+    <Compile Include="MFDevice\UsbDevice.cs" />
+    <Compile Include="USB\UsbDeviceInformation.cs" />
     <Compile Include="USB\UsbDeviceProperties.cs" />
     <Compile Include="EventHandlerForUsbDevice.cs" />
     <Compile Include="SupportedDevices\StDiscovery4.cs" />

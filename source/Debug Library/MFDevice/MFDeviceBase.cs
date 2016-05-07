@@ -13,38 +13,48 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-using Microsoft.NetMicroFramework.Tools;
 using Microsoft.NetMicroFramework.Tools.MFDeployTool.Engine;
+using Microsoft.SPOT.Debugger;
 using Microsoft.SPOT.Debugger.WireProtocol;
 using System.Threading.Tasks;
 
-namespace Microsoft.SPOT.Debugger
+namespace Microsoft.NetMicroFramework.Tools
 {
-    public static class EngineExtensions
+    public class MFDeviceBase
     {
-        //public static async Task<PingConnectionType> Ping<T>(this Engine<T> e) where T : MFDevice
-        //{
-        //    try
-        //    {
-        //        var reply = await e.GetConnectionSourceAsync();
+        /// <summary>
+        /// .NETMF debug engine
+        /// </summary>
+        public Engine DebugEngine { get; set; }
 
-        //        if (reply != null)
-        //        {
-        //            switch (reply.m_source)
-        //            {
-        //                case Commands.Monitor_Ping.c_Ping_Source_TinyCLR:
-        //                    return PingConnectionType.TinyCLR;
+        /// <summary>
+        /// Transport to the device. 
+        /// </summary>
+        public TransportType Transport { get; protected set; }
 
-        //                case Commands.Monitor_Ping.c_Ping_Source_TinyBooter:
-        //                    return PingConnectionType.TinyBooter;
-        //            }
-        //        }
-        //    }
-        //    catch { }
+        public object DeviceObject { get; set; }
 
-        //    // default to no connection
-        //    return PingConnectionType.NoConnection;
-        //}
+        /// <summary>
+        /// Pings MF device for presence.
+        /// </summary>
+        /// <returns></returns>
+        public async Task<PingConnectionType> PingAsync()
+        {
+            var reply = await DebugEngine.GetConnectionSourceAsync();
 
+            if (reply != null)
+            {
+                switch (reply.m_source)
+                {
+                    case Commands.Monitor_Ping.c_Ping_Source_TinyCLR:
+                        return PingConnectionType.TinyCLR;
+
+                    case Commands.Monitor_Ping.c_Ping_Source_TinyBooter:
+                        return PingConnectionType.TinyBooter;
+                }
+            }
+
+            return PingConnectionType.NoConnection;
+        }
     }
 }

@@ -20,12 +20,12 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
 {
     public class OutgoingMessage
     {
-        internal IController<MFDevice> m_parent;
+        internal IController m_parent;
 
         MessageRaw m_raw;
         MessageBase m_base;
 
-        public OutgoingMessage(IController<MFDevice> parent, Converter converter, uint cmd, uint flags, object payload)
+        public OutgoingMessage(IController parent, Converter converter, uint cmd, uint flags, object payload)
         {
             InitializeForSend(parent, converter, cmd, flags, payload);
 
@@ -58,7 +58,7 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
             }
         }
 
-        internal void InitializeForSend(IController<MFDevice> parent, Converter converter, uint cmd, uint flags, object payload)
+        internal void InitializeForSend(IController parent, Converter converter, uint cmd, uint flags, object payload)
         {
             Packet header = parent.NewPacket();
 

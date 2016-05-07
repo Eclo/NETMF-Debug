@@ -25,16 +25,14 @@ using Windows.Storage.Streams;
 
 namespace Microsoft.SPOT.Debugger
 {
-    public interface IPort<T> where T : MFDevice
+    public interface IPort
     {
-        //Task<bool> OpenDeviceAsync(MFDeviceBase device);
-        //ObservableCollection<T> MFDevices { get; set; }
-
         Task<uint> SendBufferAsync(byte[] buffer, CancellationToken cancellationToken);
+
         Task<DataReader> ReadBufferAsync(uint bytesToRead, TimeSpan waiTimeout, CancellationToken cancellationToken);
 
-        Task<bool> ConnectDeviceAsync(T device);
+        Task<bool> ConnectDeviceAsync(MFDeviceBase device);
 
-        void DisconnectDevice(T device);
+        void DisconnectDevice(MFDeviceBase device);
     }
 }

@@ -13,15 +13,12 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-using Microsoft.SPOT.Debugger;
 using System.Threading.Tasks;
 
 namespace Microsoft.NetMicroFramework.Tools
 {
-    public interface IMFDevice//<T> where T : MFDevice
+    public interface IMFDevice
     {
-        //Engine<T> DebugEngine { get; set; }
-
         Task<bool> ConnectAsync();
     }
 }

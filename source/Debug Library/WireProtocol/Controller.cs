@@ -21,13 +21,13 @@ using System.Threading.Tasks;
 
 namespace Microsoft.SPOT.Debugger.WireProtocol
 {
-    public class Controller : IControllerLocal<MFDevice>
+    public class Controller : IControllerLocal
     {
         //internal byte[] marker_Debugger = Encoding.UTF8.GetBytes(Packet.MARKER_DEBUGGER_V1);
         //internal byte[] marker_Packet = Encoding.UTF8.GetBytes(Packet.MARKER_PACKET_V1);
 
         private string marker;
-        private IControllerHostLocal<MFDevice> m_app;
+        private IControllerHostLocal m_app;
 
         private int lastOutboundMessage;
 
@@ -52,7 +52,7 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
         //private CLRCapabilities capabilities;
         //private WaitHandle[] m_waitHandlesRead;
 
-        public Controller(string marker, IControllerHostLocal<MFDevice> app)
+        public Controller(string marker, IControllerHostLocal app)
         {
             this.marker = marker;
             m_app = app;

@@ -24,7 +24,7 @@ namespace Test_App_UWP
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        private Engine<MFUsbDevice> debugEngine;
+        private Engine debugEngine;
 
         public MainPage()
         {
@@ -33,12 +33,13 @@ namespace Test_App_UWP
 
         private async void button_Click(object sender, RoutedEventArgs e)
         {
-            bool connectResult = await App.usbDebugClient.MFDevices[0].ConnectAsync();
+            //bool connectResult = await App.usbDebugClient.MFDevices[0].ConnectAsync();
+            bool connectResult = await App.usbDebugClient.MFDevices[0].DebugEngine.TryToConnectAsync(3, 1000);
 
-            if(connectResult)
-            {
-                //debugEngine = new Engine<MFUsbDevice>(App.usbDebugClient, App.usbDebugClient.MFDevices[0]);
-            }
+            //if(connectResult)
+            //{
+            //    //debugEngine = new Engine<MFUsbDevice>(App.usbDebugClient, App.usbDebugClient.MFDevices[0]);
+            //}
         }
 
         private async void button1_Click(object sender, RoutedEventArgs e)
@@ -57,11 +58,11 @@ namespace Test_App_UWP
         {
             //debugEngine = new Engine<MFUsbDevice>(App.usbDebugClient, App.usbDebugClient.MFDevices[0]);
 
-            var p = await App.usbDebugClient.MFDevices[0].DebugEngine.Ping();
-            //var mm = await App.usbDebugClient.MFDevices[0].DebugEngine.MemoryMapAsync();
-            //var dm = await App.usbDebugClient.MFDevices[0].DebugEngine.DeploymentMapAsync();
+            //var p = await App.usbDebugClient.MFDevices[0].PingAsync();
+            var mm = await App.usbDebugClient.MFDevices[0].DebugEngine.MemoryMapAsync();
+            var dm = await App.usbDebugClient.MFDevices[0].DebugEngine.DeploymentMapAsync();
             //var oemInfo = await App.usbDebugClient.MFDevices[0].DebugEngine.GetMonitorOemInfo();
-            //var fsm = await App.usbDebugClient.MFDevices[0].DebugEngine.GetFlashSectorMapAsync();
+            var fsm = await App.usbDebugClient.MFDevices[0].DebugEngine.GetFlashSectorMapAsync();
             //var cs = await App.usbDebugClient.MFDevices[0].DebugEngine.CheckSignatureAsync();
             //await App.usbDebugClient.MFDevices[0].DebugEngine.RebootDeviceAsync();
             //var connect = await debugEngine.TryToConnectAsync(3, 1000);

@@ -17,9 +17,9 @@ using Microsoft.NetMicroFramework.Tools;
 
 namespace Microsoft.SPOT.Debugger
 {
-    public class RuntimeValue_ValueType<T> : RuntimeValue_Class<T> where T : MFDevice
+    public class RuntimeValue_ValueType : RuntimeValue_Class
     {
-        protected internal RuntimeValue_ValueType(Engine<T> eng, WireProtocol.Commands.Debugging_Value handle) : base(eng, handle)
+        protected internal RuntimeValue_ValueType(Engine eng, WireProtocol.Commands.Debugging_Value handle) : base(eng, handle)
         {
         }
 

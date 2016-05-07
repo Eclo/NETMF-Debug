@@ -19,11 +19,11 @@ using static Microsoft.SPOT.Debugger.TypeExtensions;
 
 namespace Microsoft.SPOT.Debugger
 {
-    public class RuntimeValue_Primitive<T> : RuntimeValue<T> where T : MFDevice
+    public class RuntimeValue_Primitive : RuntimeValue
     {
         protected object m_value;
 
-        protected internal RuntimeValue_Primitive(Engine<T> eng, WireProtocol.Commands.Debugging_Value handle) : base(eng, handle)
+        protected internal RuntimeValue_Primitive(Engine eng, WireProtocol.Commands.Debugging_Value handle) : base(eng, handle)
         {
             Type t;
 

@@ -21,33 +21,34 @@ using System.Threading.Tasks;
 
 namespace Microsoft.NetMicroFramework.Tools
 {
-    public class MFUsbDevice : MFDevice //, IMFDevice<MFUsbDevice>
+    public class UsbDevice : MFDeviceBase, IMFDevice
     {
         /// <summary>
         /// .NETMF debug engine
         /// </summary>
-        public Engine<MFDevice> DebugEngine { get; protected set; }
+        //public Engine<MFDevice> DebugEngine { get; protected set; }
 
-        public UsbDeviceListEntry UsbDevice { get; set; }
+        public UsbDeviceInformation DeviceInformation
+        {
+            get
+            {
+                return DeviceObject as UsbDeviceInformation;
+            }
 
-//        public DebugSession DebugSession { get; internal set; }
+            set
+            {
+                DeviceObject = value;
+            }
+        }
 
         /// <summary>
         /// 
         /// </summary>
-        public UsbDebugClient Parent
-        {
-            get
-            {
-                //return (UsbDebugClient)ProtectedParent;
-                throw new NotImplementedException();
-            }
-        }
+        public UsbDebugClient Parent { get; set; }
 
-        public MFUsbDevice(UsbDeviceListEntry usbDevice, UsbDebugClient owner):base(owner)
+        public UsbDevice()
         {
             Transport = TransportType.Usb;
-            UsbDevice = usbDevice;
         }
 
         public bool Disconnect()
@@ -62,25 +63,6 @@ namespace Microsoft.NetMicroFramework.Tools
         public Task<bool> ConnectAsync()
         {
             return Parent.ConnectDeviceAsync(this);
-        }
-
-        /// <summary>
-        /// Start debug session 
-        /// </summary>
-        /// <returns></returns>
-        public Task StartSessionAsync()
-        {
-            return Parent.StartSessionAsync(this);
-        }
-
-        public void StopSession()
-        {
-            Parent.StopSession(this);
-        }
-
-        protected void CreateDebugEngine()
-        {
-           DebugEngine = new Engine<MFDevice>(Parent as IPort<MFDevice>, this);;
         }
     }
 }

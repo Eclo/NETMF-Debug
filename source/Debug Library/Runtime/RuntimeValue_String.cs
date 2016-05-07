@@ -20,11 +20,11 @@ using System.Threading.Tasks;
 
 namespace Microsoft.SPOT.Debugger
 {
-    public class RuntimeValue_String<T> : RuntimeValue<T> where T : MFDevice
+    public class RuntimeValue_String : RuntimeValue
     {
         internal string m_value;
 
-        protected internal RuntimeValue_String(Engine<T> eng, WireProtocol.Commands.Debugging_Value handle) : base(eng, handle)
+        protected internal RuntimeValue_String(Engine eng, WireProtocol.Commands.Debugging_Value handle) : base(eng, handle)
         {
             byte[] buf = handle.m_builtinValue;
 

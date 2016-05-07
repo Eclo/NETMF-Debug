@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.SPOT.Debugger.WireProtocol
 {
-    public interface IController<T> where T : MFDevice
+    public interface IController
     {
         Packet NewPacket();
 

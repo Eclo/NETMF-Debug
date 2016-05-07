@@ -25,14 +25,14 @@ using Windows.Storage.Streams;
 
 namespace Microsoft.SPOT.Debugger
 {
-    public class Engine<T> : IDisposable, IControllerHostLocal<MFDevice> where T : MFDevice
+    public class Engine : IDisposable, IControllerHostLocal
     {
         private const int RETRIES_DEFAULT = 4;
         private const int TIMEOUT_DEFAULT = 5000;
 
         //internal IControllerHostLocal<MFDevice> m_portDefinition;
-        internal IPort<MFDevice> m_portDefinition;
-        internal Controller m_ctrl;
+        internal IPort m_portDefinition;
+        internal Controller m_ctrl { get; set; }
         bool m_silent;
         bool m_stopDebuggerOnConnect;
 
@@ -68,9 +68,9 @@ namespace Microsoft.SPOT.Debugger
 
         bool m_fThrowOnCommunicationFailure;
         //RebootTime m_RebootTime;
-        MFDevice device;
+        IMFDevice device;
 
-        public Engine(IPort<MFDevice> pd, MFDevice device)
+        public Engine(IPort pd, IMFDevice device)
         {
             InitializeLocal(pd, device);
         }
@@ -101,28 +101,19 @@ namespace Microsoft.SPOT.Debugger
             //m_RebootTime = new RebootTime();
         }
 
-        private void InitializeLocal(IPort<MFDevice> pd, MFDevice device)
+        private void InitializeLocal(IPort pd, IMFDevice device)
         {
             m_portDefinition = pd;
             m_ctrl = new Controller(Packet.MARKER_PACKET_V1, this) ;
 
             this.device = device;
 
-            var p = device.ProtectedParent;
-
             Initialize();
         }
 
         public CLRCapabilities Capabilities { get; internal set; }
         
-        public bool IsConnected
-        {
-            get
-            {
-                //return m_portDefinition.IsConnected;
-                throw new NotImplementedException();
-            }
-        }
+        public bool IsConnected { get; internal set; }
 
         public ConnectionSource ConnectionSource { get; internal set; }
 
@@ -155,6 +146,7 @@ namespace Microsoft.SPOT.Debugger
 
                     if (msg == null)
                     {
+                        IsConnected = false;
                         return false;
                     }
 
@@ -164,6 +156,7 @@ namespace Microsoft.SPOT.Debugger
                     {
                         IsTargetBigEndian = (reply.m_dbg_flags & Commands.Monitor_Ping.c_Ping_DbgFlag_BigEndian).Equals(Commands.Monitor_Ping.c_Ping_DbgFlag_BigEndian);
                     }
+                    IsConnected = true;
 
                     ConnectionSource = (reply == null || reply.m_source == Commands.Monitor_Ping.c_Ping_Source_TinyCLR) ? ConnectionSource.TinyCLR : ConnectionSource.TinyBooter;
 
@@ -188,6 +181,7 @@ namespace Microsoft.SPOT.Debugger
 
             if (connectionSource != ConnectionSource.Unknown && connectionSource != ConnectionSource)
             {
+                IsConnected = false;
                 return false;
             }
 
@@ -321,8 +315,7 @@ namespace Microsoft.SPOT.Debugger
         
         public async Task<uint> SendBufferAsync(byte[] buffer, CancellationToken cancellationToken)
         {
-            //return await m_portDefinition.SendBufferAsync(buffer, cancellationToken).ConfigureAwait(false);
-            throw new NotImplementedException();
+            return await m_portDefinition.SendBufferAsync(buffer, cancellationToken).ConfigureAwait(false);
         }
 
         public bool ProcessMessage(IncomingMessage msg, bool fReply)
@@ -340,20 +333,9 @@ namespace Microsoft.SPOT.Debugger
             throw new NotImplementedException();
         }
 
-        public Task StartSessionAsync(MFDevice device)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void StopSession(MFDevice device)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<DataReader> ReadBufferAsync(uint bytesToRead, TimeSpan waitTimeout, CancellationToken cancellationToken)
         {
-            //return await m_portDefinition.ReadBufferAsync(bytesToRead, waitTimeout, cancellationToken).ConfigureAwait(false);
-            throw new NotImplementedException();
+            return await m_portDefinition.ReadBufferAsync(bytesToRead, waitTimeout, cancellationToken).ConfigureAwait(false);
         }
 
         private OutgoingMessage CreateMessage(uint cmd, uint flags, object payload)
@@ -1132,7 +1114,7 @@ namespace Microsoft.SPOT.Debugger
             return IncomingMessage.IsPositiveAcknowledge(await PerformRequestAsync(Commands.c_Debugging_Thread_Resume, 0, cmd).ConfigureAwait(false));
         }
 
-        public async Task<RuntimeValue<T>> GetThreadException(uint pid)
+        public async Task<RuntimeValue> GetThreadException(uint pid)
         {
             Commands.Debugging_Thread_GetException cmd = new Commands.Debugging_Thread_GetException();
 
@@ -1141,7 +1123,7 @@ namespace Microsoft.SPOT.Debugger
             return await GetRuntimeValueAsync(Commands.c_Debugging_Thread_GetException, cmd).ConfigureAwait(false);
         }
 
-        public async Task<RuntimeValue<T>> GetThreadAsync(uint pid)
+        public async Task<RuntimeValue> GetThreadAsync(uint pid)
         {
             Commands.Debugging_Thread_Get cmd = new Commands.Debugging_Thread_Get();
 
@@ -1302,7 +1284,7 @@ namespace Microsoft.SPOT.Debugger
             return new Tuple<uint, uint, uint, bool>(reply.m_numOfArguments, reply.m_numOfLocals, reply.m_depthOfEvalStack, true);
         }
 
-        private async Task<RuntimeValue<T>> GetRuntimeValueAsync(uint msg, object cmd)
+        private async Task<RuntimeValue> GetRuntimeValueAsync(uint msg, object cmd)
         {
             IncomingMessage reply = await PerformRequestAsync(msg, 0, cmd).ConfigureAwait(false);
 
@@ -1310,13 +1292,13 @@ namespace Microsoft.SPOT.Debugger
             {
                 Commands.Debugging_Value_Reply cmdReply = reply.Payload as Commands.Debugging_Value_Reply;
 
-                return RuntimeValue<T>.Convert(this, cmdReply.m_values);
+                return RuntimeValue.Convert(this, cmdReply.m_values);
             }
 
             return null;
         }
 
-        internal async Task<RuntimeValue<T>> GetFieldValueAsync(RuntimeValue<T> val, uint offset, uint fd)
+        internal async Task<RuntimeValue> GetFieldValueAsync(RuntimeValue val, uint offset, uint fd)
         {
             Commands.Debugging_Value_GetField cmd = new Commands.Debugging_Value_GetField();
 
@@ -1327,12 +1309,12 @@ namespace Microsoft.SPOT.Debugger
             return await GetRuntimeValueAsync(Commands.c_Debugging_Value_GetField, cmd).ConfigureAwait(false);
         }
 
-        public async Task<RuntimeValue<T>> GetStaticFieldValueAsync(uint fd)
+        public async Task<RuntimeValue> GetStaticFieldValueAsync(uint fd)
         {
             return await GetFieldValueAsync(null, 0, fd).ConfigureAwait(false);
         }
 
-        internal async Task<RuntimeValue<T>> AssignRuntimeValueAsync(uint heapblockSrc, uint heapblockDst)
+        internal async Task<RuntimeValue> AssignRuntimeValueAsync(uint heapblockSrc, uint heapblockDst)
         {
             Commands.Debugging_Value_Assign cmd = new Commands.Debugging_Value_Assign();
 
@@ -1375,7 +1357,7 @@ namespace Microsoft.SPOT.Debugger
             return IncomingMessage.IsPositiveAcknowledge(await PerformRequestAsync(Commands.c_Debugging_Value_ResizeScratchPad, 0, cmd).ConfigureAwait(false));
         }
 
-        public async Task<RuntimeValue<T>> GetStackFrameValueAsync(uint pid, uint depth, StackValueKind kind, uint index)
+        public async Task<RuntimeValue> GetStackFrameValueAsync(uint pid, uint depth, StackValueKind kind, uint index)
         {
             OutgoingMessage cmd = CreateMessage_GetValue_Stack(pid, depth, kind, index);
 
@@ -1385,16 +1367,16 @@ namespace Microsoft.SPOT.Debugger
             {
                 Commands.Debugging_Value_Reply cmdReply = reply.Payload as Commands.Debugging_Value_Reply;
 
-                return RuntimeValue<T>.Convert(this, cmdReply.m_values);
+                return RuntimeValue.Convert(this, cmdReply.m_values);
             }
 
             return null;
         }
 
-        public async Task<RuntimeValue<T>[]> GetStackFrameValueAllAsync(uint pid, uint depth, uint cValues, StackValueKind kind)
+        public async Task<RuntimeValue[]> GetStackFrameValueAllAsync(uint pid, uint depth, uint cValues, StackValueKind kind)
         {
             OutgoingMessage[] cmds = new OutgoingMessage[cValues];
-            RuntimeValue<T>[] vals = null;
+            RuntimeValue[] vals = null;
             uint i;
 
             for (i = 0; i < cValues; i++)
@@ -1406,14 +1388,14 @@ namespace Microsoft.SPOT.Debugger
 
             if (replies != null)
             {
-                vals = new RuntimeValue<T>[cValues];
+                vals = new RuntimeValue[cValues];
 
                 for (i = 0; i < cValues; i++)
                 {
                     Commands.Debugging_Value_Reply reply = replies[i].Payload as Commands.Debugging_Value_Reply;
                     if (reply != null)
                     {
-                        vals[i] = RuntimeValue<T>.Convert(this, reply.m_values);
+                        vals[i] = RuntimeValue.Convert(this, reply.m_values);
                     }
                 }
             }
@@ -1421,14 +1403,14 @@ namespace Microsoft.SPOT.Debugger
             return vals;
         }
 
-        public async Task<RuntimeValue<T>> GetArrayElementAsync(uint arrayReferenceId, uint index)
+        public async Task<RuntimeValue> GetArrayElementAsync(uint arrayReferenceId, uint index)
         {
             Commands.Debugging_Value_GetArray cmd = new Commands.Debugging_Value_GetArray();
 
             cmd.m_heapblock = arrayReferenceId;
             cmd.m_index = index;
 
-            RuntimeValue<T> rtv = await GetRuntimeValueAsync(Commands.c_Debugging_Value_GetArray, cmd).ConfigureAwait(false);
+            RuntimeValue rtv = await GetRuntimeValueAsync(Commands.c_Debugging_Value_GetArray, cmd).ConfigureAwait(false);
 
             if (rtv != null)
             {
@@ -1451,7 +1433,7 @@ namespace Microsoft.SPOT.Debugger
             return IncomingMessage.IsPositiveAcknowledge(await PerformRequestAsync(Commands.c_Debugging_Value_SetArray, 0, cmd).ConfigureAwait(false));
         }
 
-        public async Task<RuntimeValue<T>> GetScratchPadValue(int index)
+        public async Task<RuntimeValue> GetScratchPadValue(int index)
         {
             Commands.Debugging_Value_GetScratchPad cmd = new Commands.Debugging_Value_GetScratchPad();
 
@@ -1460,7 +1442,7 @@ namespace Microsoft.SPOT.Debugger
             return await GetRuntimeValueAsync(Commands.c_Debugging_Value_GetScratchPad, cmd).ConfigureAwait(false);
         }
 
-        public async Task<RuntimeValue<T>> AllocateObjectAsync(int scratchPadLocation, uint td)
+        public async Task<RuntimeValue> AllocateObjectAsync(int scratchPadLocation, uint td)
         {
             Commands.Debugging_Value_AllocateObject cmd = new Commands.Debugging_Value_AllocateObject();
 
@@ -1470,14 +1452,14 @@ namespace Microsoft.SPOT.Debugger
             return await GetRuntimeValueAsync(Commands.c_Debugging_Value_AllocateObject, cmd).ConfigureAwait(false);
         }
 
-        public async Task<RuntimeValue<T>> AllocateStringAsync(int scratchPadLocation, string val)
+        public async Task<RuntimeValue> AllocateStringAsync(int scratchPadLocation, string val)
         {
             Commands.Debugging_Value_AllocateString cmd = new Commands.Debugging_Value_AllocateString();
 
             cmd.m_index = scratchPadLocation;
             cmd.m_size = (uint)Encoding.UTF8.GetByteCount(val);
 
-            RuntimeValue<T> rtv = await GetRuntimeValueAsync(Commands.c_Debugging_Value_AllocateString, cmd).ConfigureAwait(false);
+            RuntimeValue rtv = await GetRuntimeValueAsync(Commands.c_Debugging_Value_AllocateString, cmd).ConfigureAwait(false);
 
             if (rtv != null)
             {
@@ -1487,7 +1469,7 @@ namespace Microsoft.SPOT.Debugger
             return rtv;
         }
 
-        public async Task<RuntimeValue<T>> AllocateArrayAsync(int scratchPadLocation, uint td, int depth, int numOfElements)
+        public async Task<RuntimeValue> AllocateArrayAsync(int scratchPadLocation, uint td, int depth, int numOfElements)
         {
             Commands.Debugging_Value_AllocateArray cmd = new Commands.Debugging_Value_AllocateArray();
 
@@ -1656,7 +1638,7 @@ namespace Microsoft.SPOT.Debugger
             return new Tuple<string, uint, uint>(null, 0, 0);
         }
 
-        public async Task<uint> GetVirtualMethodAsync(uint md, RuntimeValue<T> obj)
+        public async Task<uint> GetVirtualMethodAsync(uint md, RuntimeValue obj)
         {
             Commands.Debugging_Resolve_VirtualMethod cmd = new Commands.Debugging_Resolve_VirtualMethod();
 
@@ -2232,7 +2214,7 @@ namespace Microsoft.SPOT.Debugger
 
             cmd.m_caps = caps;
 
-            return await PerformRequestAsync(Commands.c_Debugging_Execution_QueryCLRCapabilities, 0, cmd, 3, 500).ConfigureAwait(false);
+            return await PerformRequestAsync(Commands.c_Debugging_Execution_QueryCLRCapabilities, 0, cmd, 5, 100).ConfigureAwait(false);
         }
 
         private async Task<uint> DiscoverCLRCapabilityUintAsync(uint caps)

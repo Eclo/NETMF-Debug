@@ -144,13 +144,13 @@ namespace Microsoft.SPOT.Debugger
         DATATYPE_FIRST_INVALID,
     }
 
-    public abstract class RuntimeValue<T> where T : MFDevice
+    public abstract class RuntimeValue
     {
-        protected Engine<T> m_eng;
+        protected Engine m_eng;
         protected internal WireProtocol.Commands.Debugging_Value m_handle;
         protected CorElementType m_corElementType;
 
-        protected RuntimeValue(Engine<T> eng, WireProtocol.Commands.Debugging_Value handle)// where T : MFDevice
+        protected RuntimeValue(Engine eng, WireProtocol.Commands.Debugging_Value handle)// where T : MFDevice
         {
             m_eng = eng;
             m_handle = handle;
@@ -282,12 +282,12 @@ namespace Microsoft.SPOT.Debugger
             }
         }
 
-        public virtual Task<RuntimeValue<T>> GetFieldAsync(uint offset, uint fd)
+        public virtual Task<RuntimeValue> GetFieldAsync(uint offset, uint fd)
         {
             return null;
         }
 
-        public virtual Task<RuntimeValue<T>> GetElementAsync(uint index)
+        public virtual Task<RuntimeValue> GetElementAsync(uint index)
         {
             return null;
         }
@@ -297,7 +297,7 @@ namespace Microsoft.SPOT.Debugger
             throw new NotImplementedException();
         }
 
-        static protected RuntimeValue<T> Convert(Engine<T> eng, WireProtocol.Commands.Debugging_Value[] array, int pos)
+        static protected RuntimeValue Convert(Engine eng, WireProtocol.Commands.Debugging_Value[] array, int pos)
         {
             WireProtocol.Commands.Debugging_Value src = array[pos];
 
@@ -305,56 +305,56 @@ namespace Microsoft.SPOT.Debugger
 
             switch ((RuntimeDataType)src.m_dt)
             {
-                case RuntimeDataType.DATATYPE_BOOLEAN: return new RuntimeValue_Primitive<T>(eng, src);
-                case RuntimeDataType.DATATYPE_I1: return new RuntimeValue_Primitive<T>(eng, src);
-                case RuntimeDataType.DATATYPE_U1: return new RuntimeValue_Primitive<T>(eng, src);
+                case RuntimeDataType.DATATYPE_BOOLEAN: return new RuntimeValue_Primitive(eng, src);
+                case RuntimeDataType.DATATYPE_I1: return new RuntimeValue_Primitive(eng, src);
+                case RuntimeDataType.DATATYPE_U1: return new RuntimeValue_Primitive(eng, src);
 
-                case RuntimeDataType.DATATYPE_CHAR: return new RuntimeValue_Primitive<T>(eng, src);
-                case RuntimeDataType.DATATYPE_I2: return new RuntimeValue_Primitive<T>(eng, src);
-                case RuntimeDataType.DATATYPE_U2: return new RuntimeValue_Primitive<T>(eng, src);
+                case RuntimeDataType.DATATYPE_CHAR: return new RuntimeValue_Primitive(eng, src);
+                case RuntimeDataType.DATATYPE_I2: return new RuntimeValue_Primitive(eng, src);
+                case RuntimeDataType.DATATYPE_U2: return new RuntimeValue_Primitive(eng, src);
 
-                case RuntimeDataType.DATATYPE_I4: return new RuntimeValue_Primitive<T>(eng, src);
-                case RuntimeDataType.DATATYPE_U4: return new RuntimeValue_Primitive<T>(eng, src);
-                case RuntimeDataType.DATATYPE_R4: return new RuntimeValue_Primitive<T>(eng, src);
+                case RuntimeDataType.DATATYPE_I4: return new RuntimeValue_Primitive(eng, src);
+                case RuntimeDataType.DATATYPE_U4: return new RuntimeValue_Primitive(eng, src);
+                case RuntimeDataType.DATATYPE_R4: return new RuntimeValue_Primitive(eng, src);
 
-                case RuntimeDataType.DATATYPE_I8: return new RuntimeValue_Primitive<T>(eng, src);
-                case RuntimeDataType.DATATYPE_U8: return new RuntimeValue_Primitive<T>(eng, src);
-                case RuntimeDataType.DATATYPE_R8: return new RuntimeValue_Primitive<T>(eng, src);
+                case RuntimeDataType.DATATYPE_I8: return new RuntimeValue_Primitive(eng, src);
+                case RuntimeDataType.DATATYPE_U8: return new RuntimeValue_Primitive(eng, src);
+                case RuntimeDataType.DATATYPE_R8: return new RuntimeValue_Primitive(eng, src);
 
-                case RuntimeDataType.DATATYPE_DATETIME: return new RuntimeValue_ValueType<T>(eng, src);
-                case RuntimeDataType.DATATYPE_TIMESPAN: return new RuntimeValue_ValueType<T>(eng, src);
+                case RuntimeDataType.DATATYPE_DATETIME: return new RuntimeValue_ValueType(eng, src);
+                case RuntimeDataType.DATATYPE_TIMESPAN: return new RuntimeValue_ValueType(eng, src);
 
-                case RuntimeDataType.DATATYPE_STRING: return new RuntimeValue_String<T>(eng, src);
+                case RuntimeDataType.DATATYPE_STRING: return new RuntimeValue_String(eng, src);
 
-                case RuntimeDataType.DATATYPE_OBJECT: return new RuntimeValue_Object<T>(eng, array, pos);
-                case RuntimeDataType.DATATYPE_BYREF: return new RuntimeValue_ByRef<T>(eng, array, pos);
-                case RuntimeDataType.DATATYPE_ARRAY_BYREF: return new RuntimeValue_ByRef<T>(eng, array, pos);
+                case RuntimeDataType.DATATYPE_OBJECT: return new RuntimeValue_Object(eng, array, pos);
+                case RuntimeDataType.DATATYPE_BYREF: return new RuntimeValue_ByRef(eng, array, pos);
+                case RuntimeDataType.DATATYPE_ARRAY_BYREF: return new RuntimeValue_ByRef(eng, array, pos);
 
-                case RuntimeDataType.DATATYPE_CLASS: return new RuntimeValue_Class<T>(eng, src);
-                case RuntimeDataType.DATATYPE_VALUETYPE: return new RuntimeValue_ValueType<T>(eng, src);
+                case RuntimeDataType.DATATYPE_CLASS: return new RuntimeValue_Class(eng, src);
+                case RuntimeDataType.DATATYPE_VALUETYPE: return new RuntimeValue_ValueType(eng, src);
 
-                case RuntimeDataType.DATATYPE_SZARRAY: return new RuntimeValue_Array<T>(eng, src);
+                case RuntimeDataType.DATATYPE_SZARRAY: return new RuntimeValue_Array(eng, src);
 
-                case RuntimeDataType.DATATYPE_REFLECTION: return new RuntimeValue_Reflection<T>(eng, src);
-                case RuntimeDataType.DATATYPE_DELEGATE_HEAD: return new RuntimeValue_Class<T>(eng, src);
-                case RuntimeDataType.DATATYPE_DELEGATELIST_HEAD: return new RuntimeValue_Class<T>(eng, src);
-                case RuntimeDataType.DATATYPE_WEAKCLASS: return new RuntimeValue_Class<T>(eng, src);
+                case RuntimeDataType.DATATYPE_REFLECTION: return new RuntimeValue_Reflection(eng, src);
+                case RuntimeDataType.DATATYPE_DELEGATE_HEAD: return new RuntimeValue_Class(eng, src);
+                case RuntimeDataType.DATATYPE_DELEGATELIST_HEAD: return new RuntimeValue_Class(eng, src);
+                case RuntimeDataType.DATATYPE_WEAKCLASS: return new RuntimeValue_Class(eng, src);
 
-                default: return new RuntimeValue_Internal<T>(eng, src);
+                default: return new RuntimeValue_Internal(eng, src);
             }
 
         }
 
-        static internal RuntimeValue<T> Convert(Engine<T> eng, WireProtocol.Commands.Debugging_Value[] array)
+        static internal RuntimeValue Convert(Engine eng, WireProtocol.Commands.Debugging_Value[] array)
         {
             if (array == null || array.Length == 0) return null;
 
             return Convert(eng, array, 0);
         }
 
-        private RuntimeValue<T> Clone()
+        private RuntimeValue Clone()
         {
-            return (RuntimeValue<T>)MemberwiseClone();
+            return (RuntimeValue)MemberwiseClone();
         }
 
         protected async Task<bool> SetBlockAsync(uint dt, byte[] data)
@@ -374,7 +374,7 @@ namespace Microsoft.SPOT.Debugger
         }
 
 
-        public async Task<RuntimeValue<T>> AssignAsync(uint referenceIdDirect)
+        public async Task<RuntimeValue> AssignAsync(uint referenceIdDirect)
         {
             if (this.IsPrimitive)
             {
@@ -387,9 +387,9 @@ namespace Microsoft.SPOT.Debugger
             return await m_eng.AssignRuntimeValueAsync(referenceIdDirect - 4, this.ReferenceIdDirect - 4).ConfigureAwait(false);
         }
 
-        public async Task<RuntimeValue<T>> AssignAsync(RuntimeValue<T> val)
+        public async Task<RuntimeValue> AssignAsync(RuntimeValue val)
         {
-            RuntimeValue<T> retval = null;
+            RuntimeValue retval = null;
 
             if (this.IsReflection || (val != null && val.IsReflection))
             {

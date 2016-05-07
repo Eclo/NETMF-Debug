@@ -43,7 +43,7 @@ namespace Microsoft.NetMicroFramework.Tools.UsbDebug
 
         private DeviceInformation deviceInformation;
         private DeviceAccessInformation deviceAccessInformation;
-        private UsbDevice device;
+        private Windows.Devices.Usb.UsbDevice device;
 
         private SuspendingEventHandler appSuspendCallback;
 
@@ -161,7 +161,7 @@ namespace Microsoft.NetMicroFramework.Tools.UsbDebug
             }
         }
 
-        public UsbDevice Device
+        public Windows.Devices.Usb.UsbDevice Device
         {
             get
             {
@@ -234,7 +234,7 @@ namespace Microsoft.NetMicroFramework.Tools.UsbDebug
         /// An exception may be thrown if the device could not be opened for extraordinary reasons.</returns>
         public async Task<Boolean> OpenDeviceAsync(DeviceInformation deviceInfo, String deviceSelector)
         {
-            device = await UsbDevice.FromIdAsync(deviceInfo.Id);
+            device = await Windows.Devices.Usb.UsbDevice.FromIdAsync(deviceInfo.Id);
 
             Boolean successfullyOpenedDevice = false;
             //NotifyType notificationStatus;

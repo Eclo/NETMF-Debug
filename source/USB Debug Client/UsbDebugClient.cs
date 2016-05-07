@@ -17,6 +17,7 @@ using Microsoft.NetMicroFramework.Tools.UsbDebug.Usb;
 using Microsoft.SPOT.Debugger;
 using Microsoft.SPOT.Debugger.WireProtocol;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -30,7 +31,7 @@ using Windows.UI.Xaml;
 
 namespace Microsoft.NetMicroFramework.Tools.UsbDebug
 {
-    public class UsbDebugClient : Port<MFUsbDevice>, IPort<MFUsbDevice>, IControllerHostLocal<MFUsbDevice>
+    public class UsbDebugClient : PortBase, IPort
     {
         // dictionary with mapping between USB device watcher and the device ID
         private Dictionary<DeviceWatcher, string> mapDeviceWatchersToDeviceSelector;
@@ -51,9 +52,12 @@ namespace Microsoft.NetMicroFramework.Tools.UsbDebug
         /// <summary>
         /// ObservableCollection of all USB devices that are enumerated.
         /// </summary>
-        public override ObservableCollection<MFUsbDevice> MFDevices { get; protected set; }
+        public override ObservableCollection<MFDeviceBase> MFDevices { get; protected set; }
 
-        //public DateTime LastActivity { get; protected set; }
+        /// <summary>
+        /// Internal list with the actual MF USB devices
+        /// </summary>
+        List<MFDevice<UsbDevice>> MFUsbDevices;
 
         /// <summary>
         /// Creates an USB debug client
@@ -61,7 +65,8 @@ namespace Microsoft.NetMicroFramework.Tools.UsbDebug
         public UsbDebugClient(Application callerApp)
         {
             mapDeviceWatchersToDeviceSelector = new Dictionary<DeviceWatcher, String>();
-            MFDevices = new ObservableCollection<MFUsbDevice>();
+            MFDevices = new ObservableCollection<MFDeviceBase>();
+            MFUsbDevices = new List<MFDevice<UsbDevice>>();
 
             // set caller app property
             EventHandlerForUsbDevice.CallerApp = callerApp;
@@ -88,7 +93,7 @@ namespace Microsoft.NetMicroFramework.Tools.UsbDebug
         private void InitializeStDiscovery4DeviceWatcher()
         {
             // better use  most specific type of DeviceSelector: VID, PID and class GUID
-            var stDiscovery4Selector = UsbDevice.GetDeviceSelector(StDiscovery4.DeviceVid, StDiscovery4.DevicePid, StDiscovery4.DeviceInterfaceClass);
+            var stDiscovery4Selector = Windows.Devices.Usb.UsbDevice.GetDeviceSelector(StDiscovery4.DeviceVid, StDiscovery4.DevicePid, StDiscovery4.DeviceInterfaceClass);
 
             // Create a device watcher to look for instances of this device
             var stDiscovery4Watcher = DeviceInformation.CreateWatcher(stDiscovery4Selector);
@@ -222,16 +227,21 @@ namespace Microsoft.NetMicroFramework.Tools.UsbDebug
             {
                 //     Create a new element for this device interface, and queue up the query of its
                 //     device information
-                match = new MFUsbDevice(new UsbDeviceListEntry(deviceInformation, deviceSelector), this);
+
+                match = new MFDevice<UsbDevice>();
+                match.Device.DeviceInformation = new UsbDeviceInformation(deviceInformation, deviceSelector);
+                match.Device.Parent = this;
+                match.Device.DebugEngine = new Engine(this, match);
+
 
                 Debug.WriteLine("Add new USB device to list: " + match.Description + " @ " + deviceSelector);
 
                 // Add the new element to the end of the list of devices
-                MFDevices.Add(match);
+                MFDevices.Add(match.Device as MFDeviceBase);
 
                 // now fill in the description
                 // try opening the device to read the descriptor
-                if (await match.ConnectAsync().ConfigureAwait(false))
+                if (await ConnectUsbDeviceAsync(match.Device.DeviceInformation).ConfigureAwait(false))
                 {
                     // the device description format is kept to maintain backwards compatibility
                     match.Description = EventHandlerForUsbDevice.Current.DeviceInformation.Name + "_" + await GetDeviceDescriptor(5).ConfigureAwait(false);
@@ -247,12 +257,12 @@ namespace Microsoft.NetMicroFramework.Tools.UsbDebug
             // Removes the device entry from the internal list; therefore the UI
             var deviceEntry = FindDevice(deviceId);
 
-            MFDevices.Remove(deviceEntry);
+            MFUsbDevices.Remove(deviceEntry);
         }
 
         private void ClearDeviceEntries()
         {
-            MFDevices.Clear();
+            MFUsbDevices.Clear();
         }
 
         /// <summary>
@@ -261,13 +271,13 @@ namespace Microsoft.NetMicroFramework.Tools.UsbDebug
         /// </summary>
         /// <param name="deviceId">Id of the device that is being searched for</param>
         /// <returns>DeviceListEntry that has the provided Id; else a nullptr</returns>
-        private MFUsbDevice FindDevice(String deviceId)
+        private MFDevice<UsbDevice> FindDevice(String deviceId)
         {
             if (deviceId != null)
             {
-                foreach (MFUsbDevice entry in MFDevices)
+                foreach (MFDevice<UsbDevice> entry in MFUsbDevices)
                 {
-                    if (entry.UsbDevice.DeviceInformation.Id == deviceId)
+                    if (((UsbDeviceInformation)entry.Device.DeviceObject).DeviceInformation.Id == deviceId)
                     {
                         return entry;
                     }
@@ -393,12 +403,21 @@ namespace Microsoft.NetMicroFramework.Tools.UsbDebug
         /// <summary>
         /// Event that is raised when enumeration of all watched devices is complete.
         /// </summary>
+
         public event EventHandler DeviceEnumerationCompleted;
 
         #endregion
 
-        public async Task<bool> ConnectDeviceAsync(MFUsbDevice device)
+        public async Task<bool> ConnectDeviceAsync(MFDeviceBase device)
         {
+            return await ConnectUsbDeviceAsync(device.DeviceObject as UsbDeviceInformation);
+        }
+
+        private async Task<bool> ConnectUsbDeviceAsync(UsbDeviceInformation usbDeviceInfo)
+        {
+            //cast device object to UsbDeviceEntry
+            //UsbDeviceInformation usbDeviceInfo = (UsbDeviceInformation)device.DeviceObject;
+
             // Create an EventHandlerForDevice to watch for the device we are connecting to
             EventHandlerForUsbDevice.CreateNewEventHandlerForDevice();
 
@@ -406,16 +425,34 @@ namespace Microsoft.NetMicroFramework.Tools.UsbDebug
             EventHandlerForUsbDevice.Current.OnDeviceConnected = this.OnDeviceConnected;
             EventHandlerForUsbDevice.Current.OnDeviceClose = this.OnDeviceClosing;
 
-            Debug.WriteLine("Trying to open USB device " + device.Description + " @ " + device.UsbDevice.InstanceId);
+            //Debug.WriteLine("Trying to open USB device " + device.Description + " @ " + usbDevice.InstanceId);
 
             // It is important that the FromIdAsync call is made on the UI thread because the consent prompt can only be displayed
             // on the UI thread. Since this method is invoked by the UI, we are already in the UI thread.
-            bool openResult = await EventHandlerForUsbDevice.Current.OpenDeviceAsync(device.UsbDevice.DeviceInformation, device.UsbDevice.DeviceSelector).ConfigureAwait(false);
+            bool openResult = await EventHandlerForUsbDevice.Current.OpenDeviceAsync(usbDeviceInfo.DeviceInformation, usbDeviceInfo.DeviceSelector).ConfigureAwait(false);
 
-            Debug.WriteLineIf(openResult, "Device open successfully.");
+            //Debug.WriteLineIf(openResult, "Device open successfully.");
             Debug.WriteLineIf(!openResult, "Failed to open device.");
 
+            //if(openResult)
+            //{
+            //    MFUsbDevice = new MFDevice<UsbDevice>();
+            //    MFUsbDevice.Device.DeviceInformation = new UsbDeviceInformation(usbDeviceInfo.DeviceInformation, usbDeviceInfo.DeviceSelector);
+            //    MFUsbDevice.Device.Parent = this;
+            //    MFUsbDevice.Device.DebugEngine = new Engine(this, MFUsbDevice);
+            //}
+
             return openResult;
+        }
+
+        public void DisconnectDevice(MFDeviceBase device)
+        {
+            //cast device object to UsbDeviceEntry
+            //UsbDeviceListEntry usbDevice = (UsbDeviceListEntry)device.DeviceObject;
+
+            EventHandlerForUsbDevice.Current.CloseDevice();
+
+            MFUsbDevice = null;
         }
 
         /// <summary>
@@ -429,9 +466,6 @@ namespace Microsoft.NetMicroFramework.Tools.UsbDebug
             // Find and select our connected device
             if (isAllDevicesEnumerated)
             {
-                //SelectDeviceInList(EventHandlerForUSBDevice.Current.DeviceInformation.Id);
-
-                //ButtonDisconnectFromDevice.Content = ButtonNameDisconnectFromDevice;
             }
 
             //rootPage.NotifyUser("Currently connected to: " + EventHandlerForUSBDevice.Current.DeviceInformation.Id, NotifyType.StatusMessage);
@@ -457,50 +491,14 @@ namespace Microsoft.NetMicroFramework.Tools.UsbDebug
             //    }));
         }
 
-
-        public async Task StartSessionAsync(MFUsbDevice device)
-        {
-            //// check if this device already has a session
-            //if(device.DebugSession != null)
-            //{
-            //    throw new DebugSessionAlreadyOpenException();
-            //}
-
-            //// connect to NETMF device
-            //if(await ConnectDeviceAsync(device).ConfigureAwait(false))
-            //{
-
-            //}
-
-            // couldn't connect to device so there is no debug session
-            throw new CouldntOpenNetMFDeviceException();
-        }
-
         #region Interface implementations
-
-        public bool IsConnected
-        {
-            get
-            {
-                return EventHandlerForUsbDevice.Current.IsDeviceConnected;
-            }
-        }
 
         public DateTime LastActivity { get; set; }
 
-        public void DisconnectDevice(MFUsbDevice device)
+        public void DisconnectDevice(UsbDevice device)
         {
             EventHandlerForUsbDevice.Current.CloseDevice();
         }
-
-        public void StopSession(MFUsbDevice device)
-        {
-            MFUsbDevice thisDevice = device as MFUsbDevice;
-
-            // close the device
-            DisconnectDevice(thisDevice);
-        }
-
 
         public async Task<uint> SendBufferAsync(byte[] buffer, CancellationToken cancellationToken)
         {
@@ -637,123 +635,5 @@ namespace Microsoft.NetMicroFramework.Tools.UsbDebug
 
         #endregion
 
-        public Task<bool> QueueOutputAsync(MessageRaw raw)
-        {
-            throw new NotImplementedException();
-        }
-
-        #region Deprecated stuff
-
-
-        public Packet NewPacket()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void StopProcessing()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void ResumeProcessing()
-        {
-            throw new NotImplementedException();
-        }
-
-        public uint GetUniqueEndpointId()
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool QueueOutput(MessageRaw raw)
-        {
-            throw new NotImplementedException();
-        }
-
-        #endregion
-
-
-        #region Engine methods and properties
-
-        //private IncomingMessage SyncMessage(uint cmd, uint flags, object payload, int retries, int timeout)
-        //{
-        //    //Lock on m_ReqSyncLock object, so only one thread is active inside the block.
-        //    //lock (m_ReqSyncLock)
-        //    //{
-        //        Request req = AsyncMessage(cmd, flags, payload, retries, timeout);
-
-        //        return req.Wait();
-        //    //}
-        //    return null;
-        //}
-
-        //private Request AsyncMessage(uint cmd, uint flags, object payload, int retries, int timeout)
-        //{
-        //    OutgoingMessage msg = CreateMessage(cmd, flags, payload);
-
-        //    return AsyncRequest(msg, retries, timeout);
-        //}
-
-        //private OutgoingMessage CreateMessage(uint cmd, uint flags, object payload)
-        //{
-        //    //return new OutgoingMessage(this, CreateConverter(), cmd, flags, payload);
-        //    return null;
-        //}
-
-        //internal Request AsyncRequest(OutgoingMessage msg, int retries, int timeout)
-        //{
-        //    Request req = new Request(new SPOT.Debuger.Engine(), msg, retries, timeout, null);
-
-        //    //lock (m_state.SyncObject)
-        //    //{
-
-        //    //    //Checking whether IsRunning and adding the request to m_requests
-        //    //    //needs to be atomic to avoid adding a request after the Engine
-        //    //    //has been stopped.
-
-        //    //    if (!IsRunning)
-        //    //    {
-        //    //        throw new ApplicationException("Engine is not running or process has exited.");
-        //    //    }
-
-        //    //    m_requests.Add(req);
-
-        //    //    req.SendAsync();
-        //    //}
-
-        //    return req;
-        //}
-
-        #endregion
-
-
-        #region Controller methods and properties
-
-        public bool ProcessMessage(IncomingMessage msg, bool fReply)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SpuriousCharacters(byte[] buf, int offset, int count)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void ProcessExited()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task StartSessionAsync(MFDevice device)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void StopSession(MFDevice device)
-        {
-            throw new NotImplementedException();
-        }
-
-        #endregion
     }
 }

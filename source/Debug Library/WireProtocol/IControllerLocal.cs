@@ -17,7 +17,7 @@ using Microsoft.NetMicroFramework.Tools;
 
 namespace Microsoft.SPOT.Debugger.WireProtocol
 {
-    public interface IControllerLocal<T> : IController<T> where T : MFDevice
+    public interface IControllerLocal : IController
     {
         //Task OpenPortAsync();
     }

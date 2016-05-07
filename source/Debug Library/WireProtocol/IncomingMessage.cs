@@ -20,12 +20,12 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
 {
     public class IncomingMessage
     {
-        IController<MFDevice> m_parent;
+        IController m_parent;
 
         MessageRaw m_raw;
         MessageBase m_base;
 
-        public IncomingMessage(IController<MFDevice> parent, MessageRaw raw, MessageBase messageBase)
+        public IncomingMessage(IController parent, MessageRaw raw, MessageBase messageBase)
         {
             m_parent = parent;
             m_raw = raw;
@@ -48,7 +48,7 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
             }
         }
 
-        public IController<MFDevice> Parent
+        public IController Parent
         {
             get
             {
@@ -96,7 +96,7 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
             return reply != null && ((reply.Header.m_flags & WireProtocol.Flags.c_ACK) != 0);
         }
 
-        static public async Task<bool> ReplyBadPacketAsync(IController<MFDevice> ctrl, uint flags)
+        static public async Task<bool> ReplyBadPacketAsync(IController ctrl, uint flags)
         {
             //What is this for? Nack + Ping?  What can the TinyCLR possibly do with this information?
             OutgoingMessage msg = new OutgoingMessage(ctrl, new WireProtocol.Converter(), Commands.c_Monitor_Ping, Flags.c_NonCritical | Flags.c_NACK | flags, null);

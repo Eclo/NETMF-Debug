@@ -21,7 +21,7 @@ using Windows.Storage.Streams;
 
 namespace Microsoft.SPOT.Debugger.WireProtocol
 {
-    public interface IControllerHostLocal<T> : IControllerHost<T> where T : MFDevice
+    public interface IControllerHostLocal : IControllerHost
     {
         bool ProcessMessage(IncomingMessage msg, bool fReply);
 

@@ -18,11 +18,11 @@ using System;
 
 namespace Microsoft.SPOT.Debugger
 {
-    public class RuntimeValue_Reflection<T> : RuntimeValue<T> where T : MFDevice
+    public class RuntimeValue_Reflection : RuntimeValue
     {
         private ReflectionDefinition m_rd;
 
-        protected internal RuntimeValue_Reflection(Engine<T> eng, WireProtocol.Commands.Debugging_Value handle) : base(eng, handle)
+        protected internal RuntimeValue_Reflection(Engine eng, WireProtocol.Commands.Debugging_Value handle) : base(eng, handle)
         {
             m_rd = (ReflectionDefinition)Activator.CreateInstance((typeof(ReflectionDefinition)));
 

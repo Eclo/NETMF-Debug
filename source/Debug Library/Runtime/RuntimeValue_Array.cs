@@ -18,9 +18,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.SPOT.Debugger
 {
-    public class RuntimeValue_Array<T> : RuntimeValue<T> where T : MFDevice
+    public class RuntimeValue_Array : RuntimeValue
     {
-        protected internal RuntimeValue_Array(Engine<T> eng, WireProtocol.Commands.Debugging_Value handle) : base(eng, handle)
+        protected internal RuntimeValue_Array(Engine eng, WireProtocol.Commands.Debugging_Value handle) : base(eng, handle)
         {
         }
 
@@ -31,7 +31,7 @@ namespace Microsoft.SPOT.Debugger
         public override bool IsArray { get { return true; } }
         public override bool IsReflection { get { return false; } }
 
-        public override async Task<RuntimeValue<T>> GetElementAsync(uint index)
+        public override async Task<RuntimeValue> GetElementAsync(uint index)
         {
             return await m_eng.GetArrayElementAsync(m_handle.m_referenceID, index).ConfigureAwait(false);
         }

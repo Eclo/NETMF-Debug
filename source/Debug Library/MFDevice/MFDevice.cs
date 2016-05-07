@@ -13,45 +13,25 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-using Microsoft.SPOT.Debugger;
 using Microsoft.SPOT.Debugger.WireProtocol;
 using System;
 using System.Threading.Tasks;
 
 namespace Microsoft.NetMicroFramework.Tools
 {
-    public class MFDevice : IDisposable, IMFDevice
+    public class MFDevice<T> : IDisposable, IMFDevice where T : MFDeviceBase, new()
     {
-        /// <summary>
-        /// .NETMF debug engine
-        /// </summary>
-        public Engine<MFDevice> DebugEngine { get; protected set; }
+        public T Device { get; set; }
 
-        /// <summary>
-        /// Transport to the device. 
-        /// </summary>
-        public TransportType Transport { get; protected set; }
+        public MFDevice()
+        {
+            Device = new T();
+        }
 
         /// <summary>
         /// Device description.
         /// </summary>
         public string Description { get; set; }
-
-        /// <summary>
-        /// This property is a placeholder for the parent of the derived MFDevice.
-        /// </summary>
-        // It is used in the abstract constructor to store the parent. Can't use a generic T here because the IController depends on 
-        // this MFDeviceBase class and this causes kind of a "circular reference" with the generics.
-        public IPort<MFDevice> ProtectedParent { get; set; }
-
-        protected MFDevice(object parent)
-        {
-            ProtectedParent = (IPort<MFDevice>) parent;
-
-            // create debug engine for device
-            // has to be implemented in the derived class
-            //CreateDebugEngine();
-        }
 
         #region Disposable implementation
 
@@ -88,15 +68,9 @@ namespace Microsoft.NetMicroFramework.Tools
 
         #endregion
 
-        //public abstract bool Disconnect();
-
-        //public abstract Task<PingConnectionType> Ping();
-
-        public Task<bool> ConnectAsync() { return new Task<bool>(()=> { return false; }); }
-
-        /// <summary>
-        /// Creates the debug engine for the MF device. Needs to be implemented at the derived classes.
-        /// </summary>
-        //protected abstract void CreateDebugEngine();
+        public async Task<bool> ConnectAsync()
+        {
+            return await ((IMFDevice)Device).ConnectAsync();
+        }
     }
 }

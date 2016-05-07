@@ -19,11 +19,11 @@ using System.Threading.Tasks;
 
 namespace Microsoft.SPOT.Debugger
 {
-    public class RuntimeValue_Indirect<T> : RuntimeValue<T> where T : MFDevice
+    public class RuntimeValue_Indirect : RuntimeValue
     {
-        protected RuntimeValue<T> m_value;
+        protected RuntimeValue m_value;
 
-        protected internal RuntimeValue_Indirect(Engine<T> eng, WireProtocol.Commands.Debugging_Value[] array, int pos) : base(eng, array[pos])
+        protected internal RuntimeValue_Indirect(Engine eng, WireProtocol.Commands.Debugging_Value[] array, int pos) : base(eng, array[pos])
         {
             if (++pos < array.Length)
             {
@@ -93,12 +93,12 @@ namespace Microsoft.SPOT.Debugger
             await m_value.SetStringValueAsync(val).ConfigureAwait(false);
         }
 
-        public override async Task<RuntimeValue<T>> GetFieldAsync(uint offset, uint fd)
+        public override async Task<RuntimeValue> GetFieldAsync(uint offset, uint fd)
         {
             return (m_value == null) ? null : await m_value.GetFieldAsync(offset, fd).ConfigureAwait(false);
         }
 
-        public override async Task<RuntimeValue<T>> GetElementAsync(uint index)
+        public override async Task<RuntimeValue> GetElementAsync(uint index)
         {
             return (m_value == null) ? null : await m_value.GetElementAsync(index).ConfigureAwait(false);
         }
