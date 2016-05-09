@@ -383,7 +383,13 @@ namespace Microsoft.SPOT.Debugger
             return null;
         }
 
+        [Deprecated("Deprecated. Use GetDeploymentMapAsync() instead.", DeprecationType.Deprecate, 1)]
         public async Task<List<Commands.Monitor_DeploymentMap.DeploymentData>> DeploymentMapAsync()
+        {
+            return await GetDeploymentMapAsync();
+        }
+
+        public async Task<List<Commands.Monitor_DeploymentMap.DeploymentData>> GetDeploymentMapAsync()
         {
             Commands.Monitor_DeploymentMap cmd = new Commands.Monitor_DeploymentMap();
 
