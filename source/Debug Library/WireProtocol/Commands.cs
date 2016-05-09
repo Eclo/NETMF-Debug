@@ -286,14 +286,15 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
 
             public class Reply : IConverter
             {
-                public DeploymentData[] m_map = null;
+                public List<DeploymentData> m_map;
                 public int m_count = 0;
 
                 public void PrepareForDeserialize(int size, byte[] data, Converter converter)
                 {
                     int num = (size - 4) / (3 * 4);  // size - sizof(m_count) divided by size of deplpoymentdata struct (3*sizeof(uint))
 
-                    m_map = new DeploymentData[num];
+                    m_map = Enumerable.Range(0, num).Select(x => new DeploymentData()).ToList();
+
                 }
             }
         }

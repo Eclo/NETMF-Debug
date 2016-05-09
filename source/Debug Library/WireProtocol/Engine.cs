@@ -383,7 +383,7 @@ namespace Microsoft.SPOT.Debugger
             return null;
         }
 
-        public async Task<Commands.Monitor_DeploymentMap.Reply> DeploymentMapAsync()
+        public async Task<List<Commands.Monitor_DeploymentMap.DeploymentData>> DeploymentMapAsync()
         {
             Commands.Monitor_DeploymentMap cmd = new Commands.Monitor_DeploymentMap();
 
@@ -393,7 +393,10 @@ namespace Microsoft.SPOT.Debugger
             {
                 Commands.Monitor_DeploymentMap.Reply cmdReply = reply.Payload as Commands.Monitor_DeploymentMap.Reply;
 
-                return cmdReply;
+                if (cmdReply != null)
+                {
+                    return cmdReply.m_map;
+                }
             }
 
             return null;
