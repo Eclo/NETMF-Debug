@@ -30,23 +30,23 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
 
     public class Converter
     {
-        CLRCapabilities m_capabilities;
-
         public Converter() : this(null)
         {
         }
 
         public Converter(CLRCapabilities capabilities)
         {
-            if (capabilities == null) capabilities = new CLRCapabilities();
-
-            m_capabilities = capabilities;
+            if (capabilities == null)
+            {
+                Capabilities = new CLRCapabilities();
+            }
+            else
+            {
+                Capabilities = capabilities;
+            }
         }
 
-        public CLRCapabilities Capabilities
-        {
-            get { return m_capabilities; }
-        }
+        public CLRCapabilities Capabilities { get; protected set; }
 
         public byte[] Serialize(object o)
         {
@@ -110,11 +110,11 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
                 case TypeCode.Int64: writer.Write((long)o); break;
                 case TypeCode.UInt64: writer.Write((ulong)o); break;
                 case TypeCode.Single:
-                    if (m_capabilities.FloatingPoint) writer.Write((float)o);
+                    if (Capabilities.FloatingPoint) writer.Write((float)o);
                     else writer.Write((int)((float)o * 1024));
                     break;
                 case TypeCode.Double:
-                    if (m_capabilities.FloatingPoint) writer.Write((double)o);
+                    if (Capabilities.FloatingPoint) writer.Write((double)o);
                     else writer.Write((long)((double)o * 65536));
                     break;
                 case TypeCode.String:
@@ -210,11 +210,11 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
                 case TypeCode.Int64: ret = reader.ReadInt64(); break;
                 case TypeCode.UInt64: ret = reader.ReadUInt64(); break;
                 case TypeCode.Single:
-                    if (m_capabilities.FloatingPoint) ret = reader.ReadSingle();
+                    if (Capabilities.FloatingPoint) ret = reader.ReadSingle();
                     else ret = (float)reader.ReadInt32() / 1024;
                     break;
                 case TypeCode.Double:
-                    if (m_capabilities.FloatingPoint) ret = reader.ReadDouble();
+                    if (Capabilities.FloatingPoint) ret = reader.ReadDouble();
                     else ret = (double)reader.ReadInt64() / 65536;
                     break;
                 case TypeCode.String:
@@ -232,6 +232,7 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
                         for (int i = 0; i < arr.Length; i++)
                         {
                             object objValue = arr.GetValue(i);
+
                             objValue = InternalDeserializeInstance(reader, objValue, t.GetElementType());
                             arr.SetValue(objValue, i);
                         }
