@@ -11,6 +11,7 @@
         <Button x:Name="connectButton" Content="Connect" HorizontalAlignment="Left" Margin="82,82,0,0" VerticalAlignment="Top" Click="connectButton_Click"/>
         <Button x:Name="pingButton" Content="Ping device" HorizontalAlignment="Left" Margin="82,149,0,0" VerticalAlignment="Top" Click="pingButton_Click"/>
         <Button x:Name="printMemoryMapButton" Content="Memory Map" HorizontalAlignment="Left" Margin="82,221,0,0" VerticalAlignment="Top" Click="printMemoryMapButton_Click" />
+        <Button x:Name="printFlashSectorMapButton" Content="Flash Sector Map" HorizontalAlignment="Left" Margin="82,292,0,0" VerticalAlignment="Top" Click="printFlashSectorMapButton_Click" />
 
     </Grid>
 </Page>

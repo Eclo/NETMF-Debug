@@ -29,31 +29,97 @@ namespace Microsoft.SPOT.Debugger
         /// </summary>
         /// <param name="range"></param>
         /// <returns></returns>
-        public static string ToFriendlyString(this Commands.Monitor_MemoryMap.Range[] range)
+        public static string ToStringForOutput(this List<Commands.Monitor_MemoryMap.Range> range)
         {
             StringBuilder output = new StringBuilder();
 
-            if (range != null && range.Length > 0)
+            try
             {
-                output.AppendLine("Type     Start       Size");
-                output.AppendLine("--------------------------------");
-                for (int i = 0; i < range.Length; i++)
+                if (range != null && range.Count > 0)
                 {
-                    string mem = "";
-                    switch (range[i].m_flags)
+                    output.AppendLine("Type     Start       Size");
+                    output.AppendLine("--------------------------------");
+                    for (int i = 0; i < range.Count; i++)
                     {
-                        case Commands.Monitor_MemoryMap.c_FLASH:
-                            mem = "FLASH";
-                            break;
-                        case Commands.Monitor_MemoryMap.c_RAM:
-                            mem = "RAM";
-                            break;
+                        string mem = "";
+                        switch (range[i].m_flags)
+                        {
+                            case Commands.Monitor_MemoryMap.c_FLASH:
+                                mem = "FLASH";
+                                break;
+                            case Commands.Monitor_MemoryMap.c_RAM:
+                                mem = "RAM";
+                                break;
+                        }
+                        output.AppendLine(string.Format("{0,-6} 0x{1:x08}  0x{2:x08}", mem, range[i].m_address, range[i].m_length));
                     }
-                    output.AppendLine(string.Format("{0,-6} 0x{1:x08}  0x{2:x08}", mem, range[i].m_address, range[i].m_length));
+                    return output.ToString();
                 }
             }
+            catch { }
 
-            return output.ToString();
+            return "Invalid or empty map data.";
+        }
+
+        public static string ToStringForOutput(this List<Commands.Monitor_FlashSectorMap.FlashSectorData> range)
+        {
+            StringBuilder output = new StringBuilder();
+
+            try
+            {
+                if (range != null && range.Count > 0)
+                {
+                    output.AppendLine(" Sector    Start       Size        Usage");
+                    output.AppendLine("-----------------------------------------------");
+
+                    for (int i = 0; i < range.Count; i++)
+                    {
+                        Commands.Monitor_FlashSectorMap.FlashSectorData fsd = range[i];
+
+                        string usage = "";
+                        switch (fsd.m_flags & Commands.Monitor_FlashSectorMap.c_MEMORY_USAGE_MASK)
+                        {
+                            case Commands.Monitor_FlashSectorMap.c_MEMORY_USAGE_BOOTSTRAP:
+                                usage = "Bootstrap";
+                                break;
+                            case Commands.Monitor_FlashSectorMap.c_MEMORY_USAGE_CODE:
+                                usage = "Code";
+                                break;
+                            case Commands.Monitor_FlashSectorMap.c_MEMORY_USAGE_CONFIG:
+                                usage = "Configuration";
+                                break;
+                            case Commands.Monitor_FlashSectorMap.c_MEMORY_USAGE_DEPLOYMENT:
+                                usage = "Deployment";
+                                break;
+                            case Commands.Monitor_FlashSectorMap.c_MEMORY_USAGE_UPDATE:
+                                usage = "Update Storage";
+                                break;
+                            case Commands.Monitor_FlashSectorMap.c_MEMORY_USAGE_FS:
+                                usage = "File System";
+                                break;
+                            case Commands.Monitor_FlashSectorMap.c_MEMORY_USAGE_SIMPLE_A:
+                                usage = "Simple Storage (A)";
+                                break;
+                            case Commands.Monitor_FlashSectorMap.c_MEMORY_USAGE_SIMPLE_B:
+                                usage = "Simple Storage (B)";
+                                break;
+                            case Commands.Monitor_FlashSectorMap.c_MEMORY_USAGE_STORAGE_A:
+                                usage = "EWR Storage (A)";
+                                break;
+                            case Commands.Monitor_FlashSectorMap.c_MEMORY_USAGE_STORAGE_B:
+                                usage = "EWR Storage (B)";
+                                break;
+                        }
+
+                        output.AppendLine(string.Format("{0,5}  {1,12}{2,12}   {3}", i, string.Format("0x{0:x08}", fsd.m_address), string.Format("0x{0:x08}", fsd.m_size), usage));
+                    }
+
+                    return output.ToString();
+                }
+            }
+            catch { }
+
+            return "Invalid or empty map data.";
         }
     }
 }

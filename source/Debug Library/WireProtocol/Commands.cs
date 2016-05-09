@@ -14,6 +14,8 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Microsoft.SPOT.Debugger.WireProtocol
@@ -75,13 +77,13 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
 
             public class Reply : IConverter
             {
-                public FlashSectorData[] m_map = null;
+                public List<FlashSectorData> m_map;
 
                 public void PrepareForDeserialize(int size, byte[] data, Converter converter)
                 {
                     int num = size / (3 * 4);  // size divided by size of FlashSectorData struct (3*sizeof(uint))
 
-                    m_map = new FlashSectorData[num];
+                    m_map = Enumerable.Range(0, num).Select(x => new FlashSectorData()).ToList();
                 }
             }
         }
@@ -188,18 +190,13 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
 
             public class Reply : IConverter
             {
-                public Range[] m_map = null;
+                public List<Range> m_map;
 
                 public void PrepareForDeserialize(int size, byte[] data, Converter converter)
                 {
                     int num = size / (3 * 4);
 
-                    m_map = new Range[num];
-
-                    for (int i = 0; i < num; i++)
-                    {
-                        m_map[i] = new Range();
-                    }
+                    m_map = Enumerable.Range(0, num).Select(x => new Range()).ToList();
                 }
             }
         }

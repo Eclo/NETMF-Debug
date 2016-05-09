@@ -75,7 +75,24 @@ namespace Test_App_UWP
 
             Debug.WriteLine("");
             Debug.WriteLine("");
-            Debug.WriteLine(mm.ToFriendlyString());
+            Debug.WriteLine(mm.ToStringForOutput());
+            Debug.WriteLine("");
+            Debug.WriteLine("");
+
+            // enable button
+            (sender as Button).IsEnabled = true;
+        }
+
+        private async void printFlashSectorMapButton_Click(object sender, RoutedEventArgs e)
+        {
+            // disable button
+            (sender as Button).IsEnabled = false;
+
+            var fm = await App.NETMFUsbDebugClient.MFDevices[0].DebugEngine.GetFlashSectorMapAsync();
+
+            Debug.WriteLine("");
+            Debug.WriteLine("");
+            Debug.WriteLine(fm.ToStringForOutput());
             Debug.WriteLine("");
             Debug.WriteLine("");
 

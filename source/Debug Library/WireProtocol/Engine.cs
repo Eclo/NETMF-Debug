@@ -357,7 +357,7 @@ namespace Microsoft.SPOT.Debugger
 
         #region Commands implementation
 
-        public async Task<Commands.Monitor_MemoryMap.Range[]> MemoryMapAsync()
+        public async Task<List<Commands.Monitor_MemoryMap.Range>> MemoryMapAsync()
         {
             Commands.Monitor_MemoryMap cmd = new Commands.Monitor_MemoryMap();
 
@@ -404,15 +404,20 @@ namespace Microsoft.SPOT.Debugger
             return null;
         }
 
-        public async Task<Commands.Monitor_FlashSectorMap.Reply> GetFlashSectorMapAsync()
+        public async Task<List<Commands.Monitor_FlashSectorMap.FlashSectorData>> GetFlashSectorMapAsync()
         {
             IncomingMessage reply = await PerformRequestAsync(Commands.c_Monitor_FlashSectorMap, 0, null, 1, 4000).ConfigureAwait(false);
 
             if (reply != null)
             {
-                return reply.Payload as Commands.Monitor_FlashSectorMap.Reply;
+                var cmdReply = reply.Payload as Commands.Monitor_FlashSectorMap.Reply;
+
+                if (cmdReply != null)
+                {
+                    return cmdReply.m_map;
+                }
             }
-            
+
             return null;
         }
 
