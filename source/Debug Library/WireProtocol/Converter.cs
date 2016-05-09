@@ -14,6 +14,8 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -136,6 +138,19 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
                             InternalSerializeInstance(writer, arrItem);
                         }
                     }
+                    else if (t.GetRuntimeProperties().FirstOrDefault(n => n.Name == "Count") != null)
+                    {
+                        // type implements Count property so it's a list
+
+                        // cast to IList
+                        IList list = (IList)o;
+
+                        // go through each list item and serialize it
+                        foreach(object arrItem in list)
+                        {
+                            InternalSerializeInstance(writer, arrItem);
+                        }
+                    }
                     else if (t.GetTypeInfo().IsValueType || t.GetTypeInfo().IsClass)
                     {
                         InternalSerializeFields(writer, o);
@@ -238,6 +253,22 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
                         }
 
                         ret = o;
+                    }
+                    else if (t.GetRuntimeProperties().FirstOrDefault(n => n.Name == "Count") != null)
+                    {
+                        // type implements Count property so it's a list
+                        
+                        // cast to IList
+                        IList list = (IList)o;
+
+                        // go through each list item and deserialize it
+                        for(int i = 0; i < list.Count; i++)
+                        {
+                            list[i] = InternalDeserializeInstance(reader, list[i], list[i].GetType());
+                        }
+
+                        // done here, return the de-serialized list
+                        ret = list;
                     }
                     else if (t.GetTypeInfo().IsValueType || t.GetTypeInfo().IsClass)
                     {
