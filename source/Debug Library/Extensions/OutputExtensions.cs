@@ -123,5 +123,35 @@ namespace Microsoft.SPOT.Debugger
 
             return "Invalid or empty map data.";
         }
+
+        public static string ToStringForOutput(this List<Commands.Monitor_DeploymentMap.DeploymentData> range)
+        {
+            StringBuilder output = new StringBuilder();
+
+            try
+            {
+                if (range != null && range.Count > 0)
+                {
+                    int i = 0;
+
+                    foreach (Commands.Monitor_DeploymentMap.DeploymentData item in range)
+                    {
+                        output.AppendLine("Assembly " + i++);
+                        output.AppendLine("  Address: " + item.m_address.ToString());
+                        output.AppendLine("  Size   : " + item.m_size.ToString());
+                        output.AppendLine("  CRC    : " + item.m_CRC.ToString());
+                    }
+
+                    return output.ToString();
+                }
+                else
+                {
+                    return "No deployed assemblies";
+                }
+            }
+            catch { }
+
+            return "Invalid or empty map data.";
+        }
     }
 }
