@@ -39,10 +39,11 @@ namespace Microsoft.SPOT.Debugger
                 {
                     output.AppendLine("Type     Start       Size");
                     output.AppendLine("--------------------------------");
-                    for (int i = 0; i < range.Count; i++)
+
+                    foreach (Commands.Monitor_MemoryMap.Range item in range)
                     {
                         string mem = "";
-                        switch (range[i].m_flags)
+                        switch (item.m_flags)
                         {
                             case Commands.Monitor_MemoryMap.c_FLASH:
                                 mem = "FLASH";
@@ -51,7 +52,8 @@ namespace Microsoft.SPOT.Debugger
                                 mem = "RAM";
                                 break;
                         }
-                        output.AppendLine(string.Format("{0,-6} 0x{1:x08}  0x{2:x08}", mem, range[i].m_address, range[i].m_length));
+
+                        output.AppendLine(string.Format("{0,-6} 0x{1:x08}  0x{2:x08}", mem, item.m_address, item.m_length));
                     }
                     return output.ToString();
                 }
@@ -72,12 +74,12 @@ namespace Microsoft.SPOT.Debugger
                     output.AppendLine(" Sector    Start       Size        Usage");
                     output.AppendLine("-----------------------------------------------");
 
-                    for (int i = 0; i < range.Count; i++)
-                    {
-                        Commands.Monitor_FlashSectorMap.FlashSectorData fsd = range[i];
+                    int i = 0;
 
+                    foreach (Commands.Monitor_FlashSectorMap.FlashSectorData item in range)
+                    {
                         string usage = "";
-                        switch (fsd.m_flags & Commands.Monitor_FlashSectorMap.c_MEMORY_USAGE_MASK)
+                        switch (item.m_flags & Commands.Monitor_FlashSectorMap.c_MEMORY_USAGE_MASK)
                         {
                             case Commands.Monitor_FlashSectorMap.c_MEMORY_USAGE_BOOTSTRAP:
                                 usage = "Bootstrap";
@@ -111,7 +113,7 @@ namespace Microsoft.SPOT.Debugger
                                 break;
                         }
 
-                        output.AppendLine(string.Format("{0,5}  {1,12}{2,12}   {3}", i, string.Format("0x{0:x08}", fsd.m_address), string.Format("0x{0:x08}", fsd.m_size), usage));
+                        output.AppendLine(string.Format("{0,5}  {1,12}{2,12}   {3}", i++, string.Format("0x{0:x08}", item.m_address), string.Format("0x{0:x08}", item.m_size), usage));
                     }
 
                     return output.ToString();
