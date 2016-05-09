@@ -124,12 +124,24 @@ namespace Microsoft.SPOT.Debugger
 
         public bool IsTargetBigEndian { get; internal set; }
 
+        [Windows.Foundation.Metadata.Deprecated("Please use ConnectAsync().", Windows.Foundation.Metadata.DeprecationType.Deprecate, 1)]
         public async Task<bool> TryToConnectAsync(int retries, int timeout)
         {
-            return await TryToConnectAsync(retries, timeout, false, ConnectionSource.Unknown).ConfigureAwait(false);
+            return await ConnectAsync(retries, timeout, false, ConnectionSource.Unknown).ConfigureAwait(false);
         }
 
+        [Windows.Foundation.Metadata.Deprecated("Please use ConnectAsync().", Windows.Foundation.Metadata.DeprecationType.Deprecate, 1)]
         public async Task<bool> TryToConnectAsync(int retries, int timeout, bool force, ConnectionSource connectionSource)
+        {
+            return await ConnectAsync(retries, timeout, false, ConnectionSource.Unknown).ConfigureAwait(false);
+        }
+
+        public async Task<bool> ConnectAsync(int retries, int timeout)
+        {
+            return await ConnectAsync(retries, timeout, false, ConnectionSource.Unknown).ConfigureAwait(false);
+        }
+
+        public async Task<bool> ConnectAsync(int retries, int timeout, bool force, ConnectionSource connectionSource)
         {
             if (force || IsConnected == false)
             {
