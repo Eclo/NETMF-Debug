@@ -36,6 +36,8 @@ namespace Test_App_Windows_8
 
             bool connectResult = await App.NETMFUsbDebugClient.MFDevices[0].DebugEngine.ConnectAsync(3, 1000);
 
+            var di = await App.NETMFUsbDebugClient.MFDevices[0].GetDeviceInfoAsync();
+
             // enable button
             (sender as Button).IsEnabled = true;
         }

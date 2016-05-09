@@ -111,9 +111,15 @@
     <Compile Include="Extensions\CancellationTokenExtensions.cs" />
     <Compile Include="Extensions\OutputExtensions.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
+    <Compile Include="MFDeployTool\AssemblyInfoFromResolveAssembly.cs" />
+    <Compile Include="MFDeployTool\IMFDeviceInfo.cs" />
+    <Compile Include="MFDeployTool\IAssemblyInfo.cs" />
+    <Compile Include="MFDeployTool\IAppDomainInfo.cs" />
+    <Compile Include="MFDeployTool\AppDomainInfo.cs" />
     <Compile Include="MFDevice\MFDeviceBase.cs" />
     <Compile Include="MFDevice\IMFDevice.cs" />
     <Compile Include="MFDevice\MFDevice.cs" />
+    <Compile Include="MFDeployTool\MFDeviceInfo.cs" />
     <Compile Include="PortDefinitions\IPort.cs" />
     <Compile Include="PortDefinitions\PortBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
