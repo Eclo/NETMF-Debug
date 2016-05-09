@@ -21,6 +21,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.Foundation.Metadata;
 using Windows.Storage.Streams;
 
 namespace Microsoft.SPOT.Debugger
@@ -357,7 +358,13 @@ namespace Microsoft.SPOT.Debugger
 
         #region Commands implementation
 
+        [Deprecated("Deprecated. Use GetMemoryMapAsync() instead.", DeprecationType.Deprecate, 1)]
         public async Task<List<Commands.Monitor_MemoryMap.Range>> MemoryMapAsync()
+        {
+            return await GetMemoryMapAsync();
+        }
+
+        public async Task<List<Commands.Monitor_MemoryMap.Range>> GetMemoryMapAsync()
         {
             Commands.Monitor_MemoryMap cmd = new Commands.Monitor_MemoryMap();
 
