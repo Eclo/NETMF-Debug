@@ -109,6 +109,7 @@
     <Compile Include="CRC32.cs" />
     <Compile Include="DebuggerEventSource.cs" />
     <Compile Include="Extensions\CancellationTokenExtensions.cs" />
+    <Compile Include="Extensions\OutputExtensions.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
     <Compile Include="MFDevice\MFDeviceBase.cs" />
     <Compile Include="MFDevice\IMFDevice.cs" />
