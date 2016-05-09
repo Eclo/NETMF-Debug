@@ -35,6 +35,11 @@ namespace Microsoft.NetMicroFramework.Tools
         public object DeviceObject { get; set; }
 
         /// <summary>
+        /// Device description.
+        /// </summary>
+        public string Description { get; set; }
+
+        /// <summary>
         /// Pings MF device for presence.
         /// </summary>
         /// <returns></returns>

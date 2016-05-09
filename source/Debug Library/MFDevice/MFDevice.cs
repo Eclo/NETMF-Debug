@@ -28,14 +28,17 @@ namespace Microsoft.NetMicroFramework.Tools
             Device = new T();
         }
 
-        /// <summary>
-        /// Device description.
-        /// </summary>
-        public string Description { get; set; }
-
         #region Disposable implementation
 
         public bool disposed { get; private set; }
+
+        public string Description
+        {
+            get
+            {
+                return Device.Description;
+            }
+        }
 
         ~MFDevice()
         {
