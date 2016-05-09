@@ -1,20 +1,10 @@
 ﻿using Microsoft.NetMicroFramework.Tools.UsbDebug;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
 namespace Test_App_UWP
@@ -24,7 +14,7 @@ namespace Test_App_UWP
     /// </summary>
     sealed partial class App : Application
     {
-        internal static UsbDebugClient usbDebugClient;
+        internal static UsbDebugClient NETMFUsbDebugClient;
 
 
         /// <summary>
@@ -85,13 +75,13 @@ namespace Test_App_UWP
             // Ensure the current window is active
             Window.Current.Activate();
 
-            usbDebugClient = new UsbDebugClient(this);
-            usbDebugClient.DeviceEnumerationCompleted += UsbDebugClient_DeviceEnumerationCompleted;
+            NETMFUsbDebugClient = new UsbDebugClient(this);
+            NETMFUsbDebugClient.DeviceEnumerationCompleted += UsbDebugClient_DeviceEnumerationCompleted;
         }
 
         private void UsbDebugClient_DeviceEnumerationCompleted(object sender, EventArgs e)
         {
-            Debug.WriteLine("USB device enumeration complete, Found {0} devices", usbDebugClient.MFDevices.Count);
+            Debug.WriteLine("USB device enumeration complete, Found {0} devices", NETMFUsbDebugClient.MFDevices.Count);
         }
 
         /// <summary>

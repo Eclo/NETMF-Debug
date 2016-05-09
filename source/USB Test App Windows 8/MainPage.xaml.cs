@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Microsoft.SPOT.Debugger;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -25,6 +27,51 @@ namespace Test_App_Windows_8
         public MainPage()
         {
             this.InitializeComponent();
+        }
+
+        private async void connectButton_Click(object sender, RoutedEventArgs e)
+        {
+            // disable button
+            (sender as Button).IsEnabled = false;
+
+            bool connectResult = await App.NETMFUsbDebugClient.MFDevices[0].DebugEngine.ConnectAsync(3, 1000);
+
+            // enable button
+            (sender as Button).IsEnabled = true;
+        }
+
+        private async void pingButton_Click(object sender, RoutedEventArgs e)
+        {
+            // disable button
+            (sender as Button).IsEnabled = false;
+
+            var p = await App.NETMFUsbDebugClient.MFDevices[0].PingAsync();
+
+            Debug.WriteLine("");
+            Debug.WriteLine("");
+            Debug.WriteLine("Ping response: " + p.ToString());
+            Debug.WriteLine("");
+            Debug.WriteLine("");
+
+            // enable button
+            (sender as Button).IsEnabled = true;
+        }
+
+        private async void printMemoryMapButton_Click(object sender, RoutedEventArgs e)
+        {
+            // disable button
+            (sender as Button).IsEnabled = false;
+
+            var mm = await App.NETMFUsbDebugClient.MFDevices[0].DebugEngine.MemoryMapAsync();
+
+            Debug.WriteLine("");
+            Debug.WriteLine("");
+            Debug.WriteLine(mm.ToFriendlyString());
+            Debug.WriteLine("");
+            Debug.WriteLine("");
+
+            // enable button
+            (sender as Button).IsEnabled = true;
         }
     }
 }

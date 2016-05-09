@@ -26,7 +26,7 @@ namespace Test_App_Windows_8
     /// </summary>
     sealed partial class App : Application
     {
-        UsbDebugClient usbDebugClient;
+        internal static UsbDebugClient NETMFUsbDebugClient;
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -85,14 +85,13 @@ namespace Test_App_Windows_8
             // Ensure the current window is active
             Window.Current.Activate();
 
-            usbDebugClient = new UsbDebugClient(this);
-            usbDebugClient.DeviceEnumerationCompleted += UsbDebugClient_DeviceEnumerationCompleted;
-            usbDebugClient.StartUsbDeviceWatchers();
+            NETMFUsbDebugClient = new UsbDebugClient(this);
+            NETMFUsbDebugClient.DeviceEnumerationCompleted += UsbDebugClient_DeviceEnumerationCompleted;
         }
 
         private void UsbDebugClient_DeviceEnumerationCompleted(object sender, EventArgs e)
         {
-            Debug.WriteLine("USB device enumeration complete, Found {0} devices", usbDebugClient.MFDevices.Count);
+            Debug.WriteLine("USB device enumeration complete, Found {0} devices", NETMFUsbDebugClient.MFDevices.Count);
         }
 
         /// <summary>

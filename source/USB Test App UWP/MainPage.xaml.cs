@@ -14,6 +14,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Microsoft.SPOT.Debugger;
+using System.Diagnostics;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -24,55 +25,60 @@ namespace Test_App_UWP
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        private Engine debugEngine;
-
         public MainPage()
         {
             this.InitializeComponent();
         }
 
-        private async void button_Click(object sender, RoutedEventArgs e)
+        private async void connectButton_Click(object sender, RoutedEventArgs e)
         {
-            //bool connectResult = await App.usbDebugClient.MFDevices[0].ConnectAsync();
-            bool connectResult = await App.usbDebugClient.MFDevices[0].DebugEngine.TryToConnectAsync(3, 1000);
+            // disable button
+            (sender as Button).IsEnabled = false;
 
-            //if(connectResult)
-            //{
-            //    //debugEngine = new Engine<MFUsbDevice>(App.usbDebugClient, App.usbDebugClient.MFDevices[0]);
-            //}
+            bool connectResult = await App.NETMFUsbDebugClient.MFDevices[0].DebugEngine.ConnectAsync(3, 1000);
+
+            // enable button
+            (sender as Button).IsEnabled = true;
         }
 
         private async void button1_Click(object sender, RoutedEventArgs e)
         {
-            // await App.usbDebugClient.SendRawBufferAsync(new byte[] { (byte)'x', (byte)'x' }, new System.Threading.CancellationToken());
+            var s = await App.NETMFUsbDebugClient.MFDevices[0].DebugEngine.SendBufferAsync(new byte[] { (byte)'x', (byte)'x' }, new System.Threading.CancellationToken());
 
-
-            // var r = await App.usbDebugClient.ReadRawBufferAsync(10, new System.Threading.CancellationToken());
-
-
-            //App.usbDebugClient.MFDevices[0].cre
-
+            var r = await App.NETMFUsbDebugClient.MFDevices[0].DebugEngine.ReadBufferAsync(10, TimeSpan.FromMilliseconds(1000), new System.Threading.CancellationToken());
         }
 
-        private async void button_Copy_Click(object sender, RoutedEventArgs e)
+        private async void pingButton_Click(object sender, RoutedEventArgs e)
         {
-            //debugEngine = new Engine<MFUsbDevice>(App.usbDebugClient, App.usbDebugClient.MFDevices[0]);
+            // disable button
+            (sender as Button).IsEnabled = false;
+            var p = await App.NETMFUsbDebugClient.MFDevices[0].PingAsync();
 
-            //var p = await App.usbDebugClient.MFDevices[0].PingAsync();
-            var mm = await App.usbDebugClient.MFDevices[0].DebugEngine.MemoryMapAsync();
-            var dm = await App.usbDebugClient.MFDevices[0].DebugEngine.DeploymentMapAsync();
-            //var oemInfo = await App.usbDebugClient.MFDevices[0].DebugEngine.GetMonitorOemInfo();
-            var fsm = await App.usbDebugClient.MFDevices[0].DebugEngine.GetFlashSectorMapAsync();
-            //var cs = await App.usbDebugClient.MFDevices[0].DebugEngine.CheckSignatureAsync();
-            //await App.usbDebugClient.MFDevices[0].DebugEngine.RebootDeviceAsync();
-            //var connect = await debugEngine.TryToConnectAsync(3, 1000);
+            Debug.WriteLine("");
+            Debug.WriteLine("");
+            Debug.WriteLine("Ping response: " + p.ToString());
+            Debug.WriteLine("");
+            Debug.WriteLine("");
 
-            //var mm = await App.usbDebugClient.MFDevices[0].DebugEngine.MemoryMapAsync();
+            // enable button
+            (sender as Button).IsEnabled = true;
+        }
 
-            //bool connectResult = await App.usbDebugClient.MFDevices[0].ConnectAsync();
-            //var r = await App.usbDebugClient.MFDevices[0].DebugEngine.Ping();
+        private async void printMemoryMapButton_Click(object sender, RoutedEventArgs e)
+        {
+            // disable button
+            (sender as Button).IsEnabled = false;
 
-            //var connect = await debugEngine.DummyQuery();
+            var mm = await App.NETMFUsbDebugClient.MFDevices[0].DebugEngine.MemoryMapAsync();
+
+            Debug.WriteLine("");
+            Debug.WriteLine("");
+            Debug.WriteLine(mm.ToFriendlyString());
+            Debug.WriteLine("");
+            Debug.WriteLine("");
+
+            // enable button
+            (sender as Button).IsEnabled = true;
         }
     }
 }

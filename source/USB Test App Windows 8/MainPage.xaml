@@ -8,6 +8,9 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Button x:Name="connectButton" Content="Connect" HorizontalAlignment="Left" Margin="112,118,0,0" VerticalAlignment="Top" Click="connectButton_Click"/>
+        <Button x:Name="pingButton" Content="Ping" HorizontalAlignment="Left" Margin="112,196,0,0" VerticalAlignment="Top" Click="pingButton_Click" />
+        <Button x:Name="printMemoryMapButton" Content="Memory Map" HorizontalAlignment="Left" Margin="112,276,0,0" VerticalAlignment="Top" Click="printMemoryMapButton_Click" />
 
     </Grid>
 </Page>

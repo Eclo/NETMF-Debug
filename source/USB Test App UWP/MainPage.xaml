@@ -8,9 +8,9 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <Button x:Name="button" Content="Open device" HorizontalAlignment="Left" Margin="82,82,0,0" VerticalAlignment="Top" Click="button_Click"/>
-        <Button x:Name="button1" Content="Send Raw data" HorizontalAlignment="Left" Margin="82,140,0,0" VerticalAlignment="Top" Click="button1_Click"/>
-        <Button x:Name="button_Copy" Content="Ping device" HorizontalAlignment="Left" Margin="82,233,0,0" VerticalAlignment="Top" Click="button_Copy_Click"/>
+        <Button x:Name="connectButton" Content="Connect" HorizontalAlignment="Left" Margin="82,82,0,0" VerticalAlignment="Top" Click="connectButton_Click"/>
+        <Button x:Name="pingButton" Content="Ping device" HorizontalAlignment="Left" Margin="82,149,0,0" VerticalAlignment="Top" Click="pingButton_Click"/>
+        <Button x:Name="printMemoryMapButton" Content="Memory Map" HorizontalAlignment="Left" Margin="82,221,0,0" VerticalAlignment="Top" Click="printMemoryMapButton_Click" />
 
     </Grid>
 </Page>
