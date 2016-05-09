@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.NetMicroFramework.Tools
 {
-    public class MFDevice<T> : IDisposable, IMFDevice where T : MFDeviceBase, new()
+    public class MFDevice<T> : MFDeviceBase, IDisposable, IMFDevice where T : new()
     {
         public T Device { get; set; }
 
@@ -31,14 +31,6 @@ namespace Microsoft.NetMicroFramework.Tools
         #region Disposable implementation
 
         public bool disposed { get; private set; }
-
-        public string Description
-        {
-            get
-            {
-                return Device.Description;
-            }
-        }
 
         ~MFDevice()
         {
