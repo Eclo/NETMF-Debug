@@ -15,6 +15,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation.Metadata;
 
@@ -254,6 +255,40 @@ namespace Microsoft.NetMicroFramework.Tools.MFDeployTool.Engine
         public IAssemblyInfo[] Assemblies
         {
             get { return m_AssemblyInfos.ToArray(); }
+        }
+
+        public override string ToString()
+        {
+            if (!m_fValid)
+            {
+                return "DeviceInfo is not valid!";
+            }
+            else
+            {
+                StringBuilder output = new StringBuilder();
+
+                output.AppendLine("DeviceInfo:");
+                output.AppendLine(String.Format("  HAL build info: {0}, {1}", HalBuildVersion.ToString(), HalBuildInfo));
+                output.AppendLine(String.Format("  OEM Product codes (vendor, model, SKU): {0}, {1}, {2}", OEM.ToString(), Model.ToString(), SKU.ToString()));
+                output.AppendLine("  Serial Numbers (module, system):");
+                output.AppendLine("    " + ModuleSerialNumber);
+                output.AppendLine("    " + SystemSerialNumber);
+                output.AppendLine(String.Format("  Solution Build Info: {0}, {1}", SolutionBuildVersion.ToString(), SolutionBuildInfo));
+
+                output.AppendLine("  AppDomains:");
+                foreach (IAppDomainInfo adi in AppDomains)
+                {
+                    output.AppendLine(String.Format("    {0}, id={1}", adi.Name, adi.ID));
+                }
+
+                output.AppendLine("  Assemblies:");
+                foreach (IAssemblyInfo ai in Assemblies)
+                {
+                    output.AppendLine(String.Format("    {0},{1}", ai.Name, ai.Version));
+                }
+
+                return output.ToString();
+            }
         }
     }
 }
