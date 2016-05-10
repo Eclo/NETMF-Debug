@@ -158,6 +158,7 @@
     <Compile Include="WireProtocol\RebootOption.cs" />
     <Compile Include="WireProtocol\ReleaseInfo.cs" />
     <Compile Include="WireProtocol\Request.cs" />
+    <Compile Include="WireProtocol\StringEventArgs.cs" />
     <Compile Include="WireProtocol\ThreadStatus.cs" />
     <Compile Include="WireProtocol\TransportType.cs" />
     <Compile Include="WireProtocol\TypeSysLookup.cs" />
