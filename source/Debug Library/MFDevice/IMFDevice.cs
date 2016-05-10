@@ -20,5 +20,7 @@ namespace Microsoft.NetMicroFramework.Tools
     public interface IMFDevice
     {
         Task<bool> ConnectAsync();
+
+        void DisconnectDevice();
     }
 }

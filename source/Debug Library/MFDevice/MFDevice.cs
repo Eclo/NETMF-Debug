@@ -67,5 +67,10 @@ namespace Microsoft.NetMicroFramework.Tools
         {
             return await ((IMFDevice)Device).ConnectAsync();
         }
+
+        public void DisconnectDevice()
+        {
+            ((IMFDevice)Device).DisconnectDevice();
+        }
     }
 }

@@ -160,7 +160,13 @@ namespace Microsoft.SPOT.Debugger
 
                     if (msg == null)
                     {
+                        // disconnect device
+                        device.DisconnectDevice();
+
+                        // update flag
                         IsConnected = false;
+
+                        // done here
                         return false;
                     }
 
@@ -170,6 +176,8 @@ namespace Microsoft.SPOT.Debugger
                     {
                         IsTargetBigEndian = (reply.m_dbg_flags & Commands.Monitor_Ping.c_Ping_DbgFlag_BigEndian).Equals(Commands.Monitor_Ping.c_Ping_DbgFlag_BigEndian);
                     }
+
+                    // update flag
                     IsConnected = true;
 
                     ConnectionSource = (reply == null || reply.m_source == Commands.Monitor_Ping.c_Ping_Source_TinyCLR) ? ConnectionSource.TinyCLR : ConnectionSource.TinyBooter;
@@ -195,7 +203,13 @@ namespace Microsoft.SPOT.Debugger
 
             if (connectionSource != ConnectionSource.Unknown && connectionSource != ConnectionSource)
             {
+                // disconnect device
+                device.DisconnectDevice();
+
+                // update flag
                 IsConnected = false;
+
+                // done here
                 return false;
             }
 

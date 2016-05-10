@@ -64,5 +64,11 @@ namespace Microsoft.NetMicroFramework.Tools
         {
             return Parent.ConnectDeviceAsync(this);
         }
+
+
+        public void DisconnectDevice()
+        {
+            Parent.DisconnectDevice(this);
+        }
     }
 }
