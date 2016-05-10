@@ -462,27 +462,21 @@ namespace Microsoft.SPOT.Debugger
             return null;
         }
 
-        //public bool UpdateSignatureKey(PublicKeyIndex keyIndex, byte[] oldPublicKeySignature, byte[] newPublicKey, byte[] reserveData)
-        //{
-        //    Commands.Monitor_SignatureKeyUpdate keyUpdate = new Commands.Monitor_SignatureKeyUpdate();
+        public async Task<bool> UpdateSignatureKeyAsync(PublicKeyIndex keyIndex, byte[] oldPublicKeySignature, byte[] newPublicKey, byte[] reserveData)
+        {
+            Commands.Monitor_SignatureKeyUpdate keyUpdate = new Commands.Monitor_SignatureKeyUpdate();
 
-        //    // key must be 260 bytes
-        //    if (keyUpdate.m_newPublicKey.Length != newPublicKey.Length)
-        //        return false;
+            // key must be 260 bytes
+            if (keyUpdate.m_newPublicKey.Length != newPublicKey.Length)
+                return false;
 
-        //    if (!keyUpdate.PrepareForSend((uint)keyIndex, oldPublicKeySignature, newPublicKey, reserveData))
-        //        return false;
+            if (!keyUpdate.PrepareForSend((uint)keyIndex, oldPublicKeySignature, newPublicKey, reserveData))
+                return false;
 
-        //    IncomingMessage reply = await PerformRequestAsync(Commands.c_Monitor_SignatureKeyUpdate, 0, keyUpdate).ConfigureAwait(false);
+            IncomingMessage reply = await PerformRequestAsync(Commands.c_Monitor_SignatureKeyUpdate, 0, keyUpdate).ConfigureAwait(false);
 
-        //    return IncomingMessage.IsPositiveAcknowledge(reply);
-        //}
-
-
-        //public void SendRawBuffer(byte[] buf)
-        //{
-        //    m_ctrl.SendRawBuffer(buf);
-        //}
+            return IncomingMessage.IsPositiveAcknowledge(reply);
+        }
 
         private async Task<Tuple<byte[], bool>> ReadMemoryAsync(uint address, uint length, uint offset)
         {
@@ -525,7 +519,7 @@ namespace Microsoft.SPOT.Debugger
             return await ReadMemoryAsync(address, length, 0).ConfigureAwait(false);
         }
 
-        public async Task<bool> WriteMemory(uint address, byte[] buf, int offset, int length)
+        public async Task<bool> WriteMemoryAsync(uint address, byte[] buf, int offset, int length)
         {
             int count = length;
             int pos = offset;
@@ -556,7 +550,7 @@ namespace Microsoft.SPOT.Debugger
 
         public async Task<bool> WriteMemoryAsync(uint address, byte[] buf)
         {
-            return await WriteMemory(address, buf, 0, buf.Length).ConfigureAwait(false);
+            return await WriteMemoryAsync(address, buf, 0, buf.Length).ConfigureAwait(false);
         }
 
         public async Task<bool> CheckSignatureAsync(byte[] signature, uint keyIndex)
@@ -1940,7 +1934,28 @@ namespace Microsoft.SPOT.Debugger
             return null;
         }
 
-        public async Task<Commands.Debugging_Deployment_Status.Reply> Deployment_GetStatusAsync()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="entrypoint"></param>
+        /// <param name="storageStart"></param>
+        /// <param name="storageLength"></param>
+        /// <returns>Tuple with entrypoint, storageStart, storageLength and request success</returns>
+        public async Task<Tuple<uint, uint, uint, bool>> DeploymentGetStatusWithResultAsync()
+        {
+            Commands.Debugging_Deployment_Status.Reply status = await DeploymentGetStatusAsync();
+
+            if (status != null)
+            {
+                return new Tuple<uint, uint, uint, bool>(status.m_entryPoint, status.m_storageStart, status.m_storageLength, true);
+            }
+            else
+            {
+                return new Tuple<uint, uint, uint, bool>(0, 0, 0, false);
+            }
+        }
+
+        public async Task<Commands.Debugging_Deployment_Status.Reply> DeploymentGetStatusAsync()
         {
             Commands.Debugging_Deployment_Status cmd = new Commands.Debugging_Deployment_Status();
             Commands.Debugging_Deployment_Status.Reply cmdReply = null;
@@ -1966,270 +1981,292 @@ namespace Microsoft.SPOT.Debugger
             return IncomingMessage.IsPositiveAcknowledge(await PerformRequestAsync(Commands.c_Debugging_Info_SetJMC, 0, cmd).ConfigureAwait(false));
         }
 
-        //        private async Task<bool> Deployment_Execute_IncrementalAsync(ArrayList assemblies, MessageHandler mh)
-        //        {
-        //            Commands.Debugging_Deployment_Status.ReplyEx status = Deployment_GetStatus() as Commands.Debugging_Deployment_Status.ReplyEx;
+        private async Task<bool> DeploymentExecuteIncrementalAsync(List<byte[]> assemblies, IProgress<string> progress)
+        {
+            Commands.Debugging_Deployment_Status.ReplyEx status = await DeploymentGetStatusAsync() as Commands.Debugging_Deployment_Status.ReplyEx;
 
-        //            if (status == null)
-        //                return false;
+            if (status == null)
+            {
+                return false;
+            }
 
-        //            Commands.Debugging_Deployment_Status.FlashSector[] sectors = status.m_data;
+            List<Commands.Debugging_Deployment_Status.FlashSector> sectors = status.m_data;
 
-        //            int iAssembly = 0;
+            int iAssembly = 0;
 
-        //            //The amount of bytes that the deployment will take
-        //            uint deployLength = 0;
+            //The amount of bytes that the deployment will take
+            int deployLength = 0;
 
-        //            //Compute size of assemblies to deploy
-        //            for (iAssembly = 0; iAssembly < assemblies.Count; iAssembly++)
-        //            {
-        //                byte[] assembly = (byte[])assemblies[iAssembly];
-        //                deployLength += (uint)assembly.Length;
-        //            }
+            //Compute size of assemblies to deploy
+            for (iAssembly = 0; iAssembly < assemblies.Count; iAssembly++)
+            {
+                byte[] assembly = assemblies[iAssembly];
+                deployLength += assembly.Length;
+            }
 
-        //            if (deployLength > status.m_storageLength)
-        //            {
-        //                if (mh != null)
-        //                    mh(string.Format("Deployment storage (size: {0} bytes) was not large enough to fit deployment assemblies (size: {1} bytes)", status.m_storageLength, deployLength));
+            if (deployLength > status.m_storageLength)
+            {
+                progress?.Report(string.Format("Deployment storage (size: {0} bytes) was not large enough to fit deployment assemblies (size: {1} bytes)", status.m_storageLength, deployLength));
 
-        //                return false;
-        //            }
+                return false;
+            }
 
-        //            //Compute maximum sector size
-        //            uint maxSectorSize = 0;
+            //Compute maximum sector size
+            uint maxSectorSize = 0;
 
-        //            for (int iSector = 0; iSector < sectors.Length; iSector++)
-        //            {
-        //                maxSectorSize = Math.Max(maxSectorSize, sectors[iSector].m_length);
-        //            }
+            for (int iSector = 0; iSector < sectors.Count; iSector++)
+            {
+                maxSectorSize = Math.Max(maxSectorSize, sectors[iSector].m_length);
+            }
 
-        //            //pre-allocate sector data, and a buffer to hold an empty sector's data
-        //            byte[] sectorData = new byte[maxSectorSize];
-        //            byte[] sectorDataErased = new byte[maxSectorSize];
+            //pre-allocate sector data, and a buffer to hold an empty sector's data
+            byte[] sectorData = new byte[maxSectorSize];
+            byte[] sectorDataErased = new byte[maxSectorSize];
 
-        //            Debug.Assert(status.m_eraseWord == 0 || status.m_eraseWord == 0xffffffff);
+            Debug.Assert(status.m_eraseWord == 0 || status.m_eraseWord == 0xffffffff);
 
-        //            byte bErase = (status.m_eraseWord == 0) ? (byte)0 : (byte)0xff;
-        //            if (bErase != 0)
-        //            {
-        //                //Fill in data for what an empty sector looks like
-        //                for (int i = 0; i < maxSectorSize; i++)
-        //                {
-        //                    sectorDataErased[i] = bErase;
-        //                }
-        //            }
+            byte bErase = (status.m_eraseWord == 0) ? (byte)0 : (byte)0xff;
+            if (bErase != 0)
+            {
+                //Fill in data for what an empty sector looks like
+                for (int i = 0; i < maxSectorSize; i++)
+                {
+                    sectorDataErased[i] = bErase;
+                }
+            }
 
-        //            uint bytesDeployed = 0;
+            int bytesDeployed = 0;
 
-        //            //The assembly we are using
-        //            iAssembly = 0;
-        //            //byte index into the assembly remaining to deploy
-        //            uint iAssemblyIndex = 0;
-        //            //deploy each sector, one at a time
-        //            for (int iSector = 0; iSector < sectors.Length; iSector++)
-        //            {
-        //                Commands.Debugging_Deployment_Status.FlashSector sector = sectors[iSector];
+            //The assembly we are using
+            iAssembly = 0;
 
-        //                uint cBytesLeftInSector = sector.m_length;
-        //                //byte index into the sector that we are deploying to.
-        //                uint iSectorIndex = 0;
+            //byte index into the assembly remaining to deploy
+            int iAssemblyIndex = 0;
 
-        //                //fill sector with deployment data
-        //                while (cBytesLeftInSector > 0 && iAssembly < assemblies.Count)
-        //                {
-        //                    byte[] assembly = (byte[])assemblies[iAssembly];
+            //deploy each sector, one at a time
+            for (int iSector = 0; iSector < sectors.Count; iSector++)
+            {
+                Commands.Debugging_Deployment_Status.FlashSector sector = sectors[iSector];
 
-        //                    uint cBytesLeftInAssembly = (uint)assembly.Length - iAssemblyIndex;
+                int cBytesLeftInSector = (int)sector.m_length;
+                //byte index into the sector that we are deploying to.
+                int iSectorIndex = 0;
 
-        //                    //number of bytes from current assembly to deploy in this sector
-        //                    uint cBytes = Math.Min(cBytesLeftInSector, cBytesLeftInAssembly);
+                //fill sector with deployment data
+                while (cBytesLeftInSector > 0 && iAssembly < assemblies.Count)
+                {
+                    byte[] assembly = assemblies[iAssembly];
 
-        //                    Array.Copy(assembly, iAssemblyIndex, sectorData, iSectorIndex, cBytes);
+                    int cBytesLeftInAssembly = assembly.Length - iAssemblyIndex;
 
-        //                    cBytesLeftInSector -= cBytes;
-        //                    iAssemblyIndex += cBytes;
-        //                    iSectorIndex += cBytes;
+                    //number of bytes from current assembly to deploy in this sector
+                    int cBytes = Math.Min(cBytesLeftInSector, cBytesLeftInAssembly);
 
-        //                    //Is assembly finished?
-        //                    if (iAssemblyIndex == assembly.Length)
-        //                    {
-        //                        //Next assembly
-        //                        iAssembly++;
-        //                        iAssemblyIndex = 0;
+                    Array.Copy(assembly, (int)iAssemblyIndex, sectorData, iSectorIndex, cBytes);
 
-        //                        //If there is enough room to waste the remainder of this sector, do so
-        //                        //to allow for incremental deployment, if this assembly changes for next deployment
-        //                        if (deployLength + cBytesLeftInSector <= status.m_storageLength)
-        //                        {
-        //                            deployLength += cBytesLeftInSector;
-        //                            break;
-        //                        }
-        //                    }
-        //                }
+                    cBytesLeftInSector -= cBytes;
+                    iAssemblyIndex += cBytes;
+                    iSectorIndex += cBytes;
 
-        //                uint crc = Commands.Debugging_Deployment_Status.c_CRC_Erased_Sentinel;
+                    //Is assembly finished?
+                    if (iAssemblyIndex == assembly.Length)
+                    {
+                        //Next assembly
+                        iAssembly++;
+                        iAssemblyIndex = 0;
 
-        //                if (iSectorIndex > 0)
-        //                {
-        //                    //Fill in the rest with erased value
-        //                    Array.Copy(sectorDataErased, iSectorIndex, sectorData, iSectorIndex, cBytesLeftInSector);
+                        //If there is enough room to waste the remainder of this sector, do so
+                        //to allow for incremental deployment, if this assembly changes for next deployment
+                        if (deployLength + cBytesLeftInSector <= status.m_storageLength)
+                        {
+                            deployLength += cBytesLeftInSector;
+                            break;
+                        }
+                    }
+                }
 
-        //                    crc = CRC.ComputeCRC(sectorData, 0, (int)sector.m_length, 0);
-        //                }
+                uint crc = Commands.Debugging_Deployment_Status.c_CRC_Erased_Sentinel;
 
-        //                //Has the data changed from what is in this sector
-        //                if (sector.m_crc != crc)
-        //                {
-        //                    //Is the data not erased
-        //                    if (sector.m_crc != Commands.Debugging_Deployment_Status.c_CRC_Erased_Sentinel)
-        //                    {
-        //                        if (!EraseMemory(sector.m_start, sector.m_length))
-        //                        {
-        //                            if (mh != null)
-        //                                mh(string.Format("FAILED to erase device memory @0x{0:X8} with Length=0x{1:X8}", sector.m_start, sector.m_length));
+                if (iSectorIndex > 0)
+                {
+                    //Fill in the rest with erased value
+                    Array.Copy(sectorDataErased, iSectorIndex, sectorData, iSectorIndex, cBytesLeftInSector);
 
-        //                            return false;
-        //                        }
+                    crc = CRC.ComputeCRC(sectorData, 0, (int)sector.m_length, 0);
+                }
 
-        //#if DEBUG
-        //                        Commands.Debugging_Deployment_Status.ReplyEx statusT = Deployment_GetStatus() as Commands.Debugging_Deployment_Status.ReplyEx;
-        //                        Debug.Assert(statusT != null);
-        //                        Debug.Assert(statusT.m_data[iSector].m_crc == Commands.Debugging_Deployment_Status.c_CRC_Erased_Sentinel);
-        //#endif
-        //                    }
+                //Has the data changed from what is in this sector
+                if (sector.m_crc != crc)
+                {
+                    //Is the data not erased
+                    if (sector.m_crc != Commands.Debugging_Deployment_Status.c_CRC_Erased_Sentinel)
+                    {
+                        if (!await EraseMemoryAsync(sector.m_start, sector.m_length))
+                        {
+                            progress?.Report((string.Format("FAILED to erase device memory @0x{0:X8} with Length=0x{1:X8}", sector.m_start, sector.m_length)));
 
-        //                    //Is there anything to deploy
-        //                    if (iSectorIndex > 0)
-        //                    {
-        //                        bytesDeployed += iSectorIndex;
+                            return false;
+                        }
 
-        //                        if (!WriteMemory(sector.m_start, sectorData, 0, (int)iSectorIndex))
-        //                        {
-        //                            if (mh != null)
-        //                                mh(string.Format("FAILED to write device memory @0x{0:X8} with Length={1:X8}", sector.m_start, (int)iSectorIndex));
+#if DEBUG
+                        Commands.Debugging_Deployment_Status.ReplyEx statusT = await DeploymentGetStatusAsync() as Commands.Debugging_Deployment_Status.ReplyEx;
+                        Debug.Assert(statusT != null);
+                        Debug.Assert(statusT.m_data[iSector].m_crc == Commands.Debugging_Deployment_Status.c_CRC_Erased_Sentinel);
+#endif
+                    }
 
-        //                            return false;
-        //                        }
-        //#if DEBUG
-        //                        Commands.Debugging_Deployment_Status.ReplyEx statusT = Deployment_GetStatus() as Commands.Debugging_Deployment_Status.ReplyEx;
-        //                        Debug.Assert(statusT != null);
-        //                        Debug.Assert(statusT.m_data[iSector].m_crc == crc);
-        //                        //Assert the data we are deploying is not sentinel value
-        //                        Debug.Assert(crc != Commands.Debugging_Deployment_Status.c_CRC_Erased_Sentinel);
-        //#endif
-        //                    }
-        //                }
-        //            }
+                    //Is there anything to deploy
+                    if (iSectorIndex > 0)
+                    {
+                        bytesDeployed += iSectorIndex;
 
-        //            if (mh != null)
-        //            {
-        //                if (bytesDeployed == 0)
-        //                {
-        //                    mh("All assemblies on the device are up to date.  No assembly deployment was necessary.");
-        //                }
-        //                else
-        //                {
-        //                    mh(string.Format("Deploying assemblies for a total size of {0} bytes", bytesDeployed));
-        //                }
-        //            }
+                        if (!await WriteMemoryAsync(sector.m_start, sectorData, 0, (int)iSectorIndex))
+                        {
+                            progress?.Report((string.Format("FAILED to write device memory @0x{0:X8} with Length={1:X8}", sector.m_start, (int)iSectorIndex)));
 
-        //            return true;
-        //        }
+                            return false;
+                        }
+#if DEBUG
+                        Commands.Debugging_Deployment_Status.ReplyEx statusT = await DeploymentGetStatusAsync() as Commands.Debugging_Deployment_Status.ReplyEx;
+                        Debug.Assert(statusT != null);
+                        Debug.Assert(statusT.m_data[iSector].m_crc == crc);
+                        //Assert the data we are deploying is not sentinel value
+                        Debug.Assert(crc != Commands.Debugging_Deployment_Status.c_CRC_Erased_Sentinel);
+#endif
+                    }
+                }
+            }
 
-        //private bool Deployment_Execute_Full(ArrayList assemblies, MessageHandler mh)
-        //{
-        //    uint entrypoint;
-        //    uint storageStart;
-        //    uint storageLength;
-        //    uint deployLength;
-        //    byte[] closeHeader = new byte[8];
+            if (bytesDeployed == 0)
+            {
+                progress?.Report("All assemblies on the device are up to date.  No assembly deployment was necessary.");
+            }
+            else
+            {
+                progress?.Report(string.Format("Deploying assemblies for a total size of {0} bytes", bytesDeployed));
+            }
 
-        //    if (!Deployment_GetStatus(out entrypoint, out storageStart, out storageLength))
-        //        return false;
+            return true;
+        }
 
-        //    if (storageLength == 0)
-        //        return false;
+        private async Task<bool> DeploymentExecuteFullAsync(List<byte[]> assemblies, IProgress<string> progress)
+        {
+            uint entrypoint;
+            uint storageStart;
+            uint storageLength;
+            uint deployLength;
+            byte[] closeHeader = new byte[8];
 
-        //    deployLength = (uint)closeHeader.Length;
+            // perform request
+            var reply = await DeploymentGetStatusWithResultAsync();
 
-        //    foreach (byte[] assembly in assemblies)
-        //    {
-        //        deployLength += (uint)assembly.Length;
-        //    }
+            // check if request was successfully executed
+            if (!reply.Item4)
+            {
+                return false;
+            }
 
-        //    if (mh != null)
-        //        mh(string.Format("Deploying assemblies for a total size of {0} bytes", deployLength));
+            // fill in the local properties with the result
+            entrypoint = reply.Item1;
+            storageStart = reply.Item2;
+            storageLength = reply.Item3;
 
-        //    if (deployLength > storageLength)
-        //        return false;
+            if (storageLength == 0)
+            {
+                return false;
+            }
 
-        //    if (!EraseMemory(storageStart, deployLength))
-        //        return false;
+            deployLength = (uint)closeHeader.Length;
 
-        //    foreach (byte[] assembly in assemblies)
-        //    {
-        //        //
-        //        // Only word-aligned assemblies are allowed.
-        //        //
-        //        if (assembly.Length % 4 != 0)
-        //            return false;
+            foreach (byte[] assembly in assemblies)
+            {
+                deployLength += (uint)assembly.Length;
+            }
 
-        //        if (!WriteMemory(storageStart, assembly))
-        //            return false;
+            progress?.Report(string.Format("Deploying assemblies for a total size of {0} bytes", deployLength));
 
-        //        storageStart += (uint)assembly.Length;
-        //    }
+            if (deployLength > storageLength)
+            {
+                return false;
+            }
 
-        //    if (!WriteMemory(storageStart, closeHeader))
-        //        return false;
+            if (!await EraseMemoryAsync(storageStart, deployLength))
+            {
+                return false;
+            }
 
-        //    return true;
-        //}
+            foreach (byte[] assembly in assemblies)
+            {
+                //
+                // Only word-aligned assemblies are allowed.
+                //
+                if (assembly.Length % 4 != 0)
+                {
+                    return false;
+                }
+
+                if (!await WriteMemoryAsync(storageStart, assembly))
+                {
+                    return false;
+                }
+
+                storageStart += (uint)assembly.Length;
+            }
+
+            if (!await WriteMemoryAsync(storageStart, closeHeader))
+            {
+                return false;
+            }
+
+            return true;
+        }
 
         //public bool Deployment_Execute(ArrayList assemblies)
         //{
         //    return Deployment_Execute(assemblies, true, null);
         //}
 
-        //public bool Deployment_Execute(ArrayList assemblies, bool fRebootAfterDeploy, MessageHandler mh)
-        //{
-        //    bool fDeployedOK = false;
+        public async Task<bool> DeploymentExecuteAsync(List<byte[]> assemblies, bool fRebootAfterDeploy = true, IProgress<string> progress = null)
+        {
+            bool fDeployedOK = false;
 
-        //    if (!PauseExecution())
-        //        return false;
+            if (!await PauseExecutionAsync())
+            {
+                return false;
+            }
 
-        //    if (Capabilities.IncrementalDeployment)
-        //    {
-        //        if (mh != null)
-        //            mh("Incrementally deploying assemblies to device");
-        //        fDeployedOK = Deployment_Execute_Incremental(assemblies, mh);
-        //    }
-        //    else
-        //    {
-        //        if (mh != null)
-        //            mh("Deploying assemblies to device");
-        //        fDeployedOK = Deployment_Execute_Full(assemblies, mh);
-        //    }
+            if (Capabilities.IncrementalDeployment)
+            {
+                progress?.Report("Incrementally deploying assemblies to device");
 
-        //    if (!fDeployedOK)
-        //    {
-        //        if (mh != null)
-        //            mh("Assemblies not successfully deployed to device.");
-        //    }
-        //    else
-        //    {
-        //        if (mh != null)
-        //            mh("Assemblies successfully deployed to device.");
-        //        if (fRebootAfterDeploy)
-        //        {
-        //            if (mh != null)
-        //                mh("Rebooting device...");
-        //            RebootDevice(RebootOption.RebootClrOnly);
-        //        }
-        //    }
+                fDeployedOK = await DeploymentExecuteIncrementalAsync(assemblies, progress);
+            }
+            else
+            {
+                progress?.Report("Deploying assemblies to device");
 
-        //    return fDeployedOK;
-        //}
+                fDeployedOK = await DeploymentExecuteFullAsync(assemblies, progress);
+            }
+
+            if (!fDeployedOK)
+            {
+                progress?.Report("Assemblies not successfully deployed to device.");
+            }
+            else
+            {
+                progress?.Report("Assemblies successfully deployed to device.");
+
+                if (fRebootAfterDeploy)
+                {
+
+                    progress?.Report("Rebooting device...");
+
+                    await RebootDeviceAsync(RebootOption.RebootClrOnly);
+                }
+            }
+
+            return fDeployedOK;
+        }
 
         public async Task<Tuple<uint, bool>> SetProfilingModeAsync(uint iSet, uint iReset)
         {

@@ -1449,11 +1449,12 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
                 public uint m_maxSectorErase_uSec;
                 public uint m_maxWordWrite_uSec;
 
-                public FlashSector[] m_data = null;
+                public List<FlashSector> m_data;
 
                 public void PrepareForDeserialize(int size, byte[] data, Converter converter)
                 {
-                    m_data = new FlashSector[(size - 6 * 4) / (3 * 4)];
+                    m_data = new List<FlashSector>();
+                    m_data = Enumerable.Range(0, (size - 6 * 4) / (3 * 4)).Select(x => new FlashSector()).ToList();
                 }
             }
         }
