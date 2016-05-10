@@ -2415,14 +2415,14 @@ namespace Microsoft.SPOT.Debugger
 
         private async Task<CLRCapabilities> DiscoverCLRCapabilitiesAsync()
         {
-            return new CLRCapabilities(
-                            await DiscoverCLRCapabilityFlagsAsync().ConfigureAwait(false),
-                            await DiscoverCLRCapabilityLCDAsync().ConfigureAwait(false),
-                            await DiscoverSoftwareVersionPropertiesAsync().ConfigureAwait(false),
-                            await DiscoverHalSystemInfoPropertiesAsync().ConfigureAwait(false),
-                            await DiscoverClrInfoPropertiesAsync().ConfigureAwait(false),
-                            await DiscoverSolutionInfoPropertiesAsync().ConfigureAwait(false)
-                            );
+            var clrFlags = await DiscoverCLRCapabilityFlagsAsync().ConfigureAwait(false);
+            var clrLcd = await DiscoverCLRCapabilityLCDAsync().ConfigureAwait(false);
+            var softwareVersion = await DiscoverSoftwareVersionPropertiesAsync().ConfigureAwait(false);
+            var halSysInfo = await DiscoverHalSystemInfoPropertiesAsync().ConfigureAwait(false);
+            var clrInfo = await DiscoverClrInfoPropertiesAsync().ConfigureAwait(false);
+            var solutionInfo = await DiscoverSolutionInfoPropertiesAsync().ConfigureAwait(false);
+
+            return new CLRCapabilities(clrFlags, clrLcd, softwareVersion, halSysInfo, clrInfo, solutionInfo);
         }
 
         #endregion
