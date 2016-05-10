@@ -18,6 +18,7 @@ using Microsoft.SPOT.Debugger.WireProtocol;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -2262,11 +2263,13 @@ namespace Microsoft.SPOT.Debugger
 
                 if (cmdReply != null && cmdReply.m_data != null && cmdReply.m_data.Length == 4)
                 {
-                    object obj = (object)ret;
+                    // can't use Converter because the deserialization of UInt32 is not supported
+                    // replaced with a simple binary reader
 
-                    new Converter().Deserialize(obj, cmdReply.m_data);
+                    MemoryStream stream = new MemoryStream(cmdReply.m_data);
+                    BinaryReader reader = new BinaryReader(stream, Encoding.Unicode);
 
-                    ret = (uint)obj;
+                    ret = reader.ReadUInt32();
                 }
             }
 
