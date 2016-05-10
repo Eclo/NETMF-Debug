@@ -73,44 +73,6 @@ namespace Microsoft.SPOT.Debugger
             return false;
         }
 
-        internal IncomingMessage Wait()
-        {
-            if (m_event == null)
-                return responseMsg;
-
-            //var waitStartTime = DateTime.UtcNow;
-            //var requestTimedOut = !m_event.WaitOne(m_waitRetryTimeout, false);
-
-            //// Wait for m_waitRetryTimeout milliseconds, if we did not get a signal by then
-            //// attempt sending the request again, and then wait more.
-            //while (requestTimedOut)
-            //{
-            //    var deltaT = DateTime.UtcNow - waitStartTime;
-            //    if (deltaT >= m_totalWaitTimeout)
-            //        break;
-
-            //    if (m_retries <= 0)
-            //        break;
-
-            //    //if( m_outMsg.Send( ) )
-            //    m_retries--;
-            //    //m_event.Reset();
-
-            //    requestTimedOut = !m_event.WaitOne(m_waitRetryTimeout, false);
-            //}
-
-            //if (requestTimedOut)
-            //    m_parent.CancelRequest(this);
-
-            //if (responseMsg == null && m_parent.ThrowOnCommunicationFailure)
-            //{
-            //    //do we want a separate exception for aborted requests?
-            //    throw new IOException("Request failed");
-            //}
-
-            return responseMsg;
-        }
-
         internal void Signal(IncomingMessage res)
         {
             lock (this)
