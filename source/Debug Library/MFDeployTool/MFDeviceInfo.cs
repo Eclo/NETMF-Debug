@@ -268,12 +268,12 @@ namespace Microsoft.NetMicroFramework.Tools.MFDeployTool.Engine
                 StringBuilder output = new StringBuilder();
 
                 output.AppendLine("DeviceInfo:");
-                output.AppendLine(String.Format("  HAL build info: {0}, {1}", HalBuildVersion.ToString(), HalBuildInfo));
+                output.AppendLine(String.Format("  HAL build info: {0}, {1}", HalBuildVersion.ToString(), HalBuildInfo.TrimEnd('\0')));
                 output.AppendLine(String.Format("  OEM Product codes (vendor, model, SKU): {0}, {1}, {2}", OEM.ToString(), Model.ToString(), SKU.ToString()));
                 output.AppendLine("  Serial Numbers (module, system):");
-                output.AppendLine("    " + ModuleSerialNumber);
-                output.AppendLine("    " + SystemSerialNumber);
-                output.AppendLine(String.Format("  Solution Build Info: {0}, {1}", SolutionBuildVersion.ToString(), SolutionBuildInfo));
+                output.AppendLine("    " + ModuleSerialNumber?.TrimEnd('\0'));
+                output.AppendLine("    " + SystemSerialNumber?.TrimEnd('\0'));
+                output.AppendLine(String.Format("  Solution Build Info: {0}, {1}", SolutionBuildVersion?.ToString(), SolutionBuildInfo?.TrimEnd('\0')));
 
                 output.AppendLine("  AppDomains:");
                 foreach (IAppDomainInfo adi in AppDomains)
