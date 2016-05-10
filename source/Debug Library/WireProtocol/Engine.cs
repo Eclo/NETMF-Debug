@@ -128,7 +128,7 @@ namespace Microsoft.SPOT.Debugger
 
         public bool IsTargetBigEndian { get; internal set; }
 
-        [Windows.Foundation.Metadata.Deprecated("Please use ConnectAsync().", Windows.Foundation.Metadata.DeprecationType.Deprecate, 1)]
+        [Deprecated("Please use ConnectAsync().", Windows.Foundation.Metadata.DeprecationType.Deprecate, 1)]
         public async Task<bool> TryToConnectAsync(int retries, int timeout)
         {
             return await ConnectAsync(retries, timeout, false, ConnectionSource.Unknown).ConfigureAwait(false);
@@ -294,9 +294,9 @@ namespace Microsoft.SPOT.Debugger
 
             try
             {
-                Debug.WriteLine("_________________________________________________________");
-                Debug.WriteLine("Executing " + DebuggerEventSource.GetCommandName(command));
-                Debug.WriteLine("_________________________________________________________");
+                //Debug.WriteLine("_________________________________________________________");
+                //Debug.WriteLine("Executing " + DebuggerEventSource.GetCommandName(command));
+                //Debug.WriteLine("_________________________________________________________");
 
                 // create message
                 OutgoingMessage message = new OutgoingMessage(m_ctrl, CreateConverter(), command, flags, payload);
@@ -321,15 +321,14 @@ namespace Microsoft.SPOT.Debugger
             return await request.PerformRequestAsync(new CancellationToken());
         }
 
-        private async Task<IncomingMessage[]> PerformRequestBatchAsync(OutgoingMessage[] messages, int retries = 3, int timeout = 1000)
+        private async Task<List<IncomingMessage>> PerformRequestBatchAsync(List<OutgoingMessage> messages, int retries = 3, int timeout = 1000)
         {
-            int cMessage = messages.Length;
-            IncomingMessage[] replies = new IncomingMessage[cMessage];
-            Request[] requests = new Request[cMessage];
+            List<IncomingMessage> replies = new List<IncomingMessage>();
+            List<Request> requests = new List<Request>();
 
-            for (int iMessage = 0; iMessage < cMessage; iMessage++)
+            foreach(OutgoingMessage message in messages)
             {
-                replies[iMessage] = await PerformRequestAsync(messages[iMessage], retries, timeout);
+                replies.Add(await PerformRequestAsync(message, retries, timeout));
             }
 
             return replies;
@@ -1266,38 +1265,34 @@ namespace Microsoft.SPOT.Debugger
             return null;
         }
 
-        public async Task<Commands.Debugging_Resolve_Assembly[]> ResolveAllAssembliesAsync()
+        public async Task<List<Commands.Debugging_Resolve_Assembly>> ResolveAllAssembliesAsync()
         {
             Commands.Debugging_TypeSys_Assemblies.Reply assemblies = await GetAssembliesAsync().ConfigureAwait(false);
-            Commands.Debugging_Resolve_Assembly[] resolveAssemblies = null;
+            List<Commands.Debugging_Resolve_Assembly> resolveAssemblies = new List<Commands.Debugging_Resolve_Assembly>();
 
             if (assemblies == null || assemblies.m_data == null)
             {
-                resolveAssemblies = new Commands.Debugging_Resolve_Assembly[0];
+                resolveAssemblies = new List<Commands.Debugging_Resolve_Assembly>();
             }
             else
             {
-                int cAssembly = assemblies.m_data.Length;
-                OutgoingMessage[] requests = new OutgoingMessage[cAssembly];
-                int iAssembly;
+                List<OutgoingMessage> requests = new List<OutgoingMessage>();
 
-                for (iAssembly = 0; iAssembly < cAssembly; iAssembly++)
+                foreach(uint iAssembly in assemblies.m_data)
                 {
                     Commands.Debugging_Resolve_Assembly cmd = new Commands.Debugging_Resolve_Assembly();
+                    cmd.m_idx = iAssembly;
 
-                    cmd.m_idx = assemblies.m_data[iAssembly];
-
-                    requests[iAssembly] = CreateMessage(Commands.c_Debugging_Resolve_Assembly, 0, cmd);
+                    requests.Add(CreateMessage(Commands.c_Debugging_Resolve_Assembly, 0, cmd));
                 }
 
-                IncomingMessage[] replies = await PerformRequestBatchAsync(requests).ConfigureAwait(false);
+                List<IncomingMessage> replies = await PerformRequestBatchAsync(requests).ConfigureAwait(false);
 
-                resolveAssemblies = new Commands.Debugging_Resolve_Assembly[cAssembly];
-
-                for (iAssembly = 0; iAssembly < cAssembly; iAssembly++)
+                foreach(IncomingMessage message in replies)
                 {
-                    resolveAssemblies[iAssembly] = requests[iAssembly].Payload as Commands.Debugging_Resolve_Assembly;
-                    resolveAssemblies[iAssembly].m_reply = replies[iAssembly].Payload as Commands.Debugging_Resolve_Assembly.Reply;
+                    // reply is a match for request which m_seq is same as reply m_seqReply
+                    resolveAssemblies.Add(requests.Find(req => req.Header.m_seq == message.Header.m_seqReply).Payload as Commands.Debugging_Resolve_Assembly);
+                    resolveAssemblies[resolveAssemblies.Count - 1].m_reply = message.Payload as Commands.Debugging_Resolve_Assembly.Reply;
                 }
             }
 
@@ -1436,27 +1431,27 @@ namespace Microsoft.SPOT.Debugger
 
         public async Task<RuntimeValue[]> GetStackFrameValueAllAsync(uint pid, uint depth, uint cValues, StackValueKind kind)
         {
-            OutgoingMessage[] cmds = new OutgoingMessage[cValues];
+            List<OutgoingMessage> cmds = new List<OutgoingMessage>();
             RuntimeValue[] vals = null;
-            uint i;
+            uint i = 0;
 
             for (i = 0; i < cValues; i++)
             {
-                cmds[i] = CreateMessage_GetValue_Stack(pid, depth, kind, i);
+                cmds.Add(CreateMessage_GetValue_Stack(pid, depth, kind, i));
             }
 
-            IncomingMessage[] replies = await PerformRequestBatchAsync(cmds).ConfigureAwait(false);
+            List<IncomingMessage> replies = await PerformRequestBatchAsync(cmds).ConfigureAwait(false);
 
             if (replies != null)
             {
                 vals = new RuntimeValue[cValues];
 
-                for (i = 0; i < cValues; i++)
+                foreach(IncomingMessage message in replies)
                 {
-                    Commands.Debugging_Value_Reply reply = replies[i].Payload as Commands.Debugging_Value_Reply;
+                    Commands.Debugging_Value_Reply reply = message.Payload as Commands.Debugging_Value_Reply;
                     if (reply != null)
                     {
-                        vals[i] = RuntimeValue.Convert(this, reply.m_values);
+                        vals[i++] = RuntimeValue.Convert(this, reply.m_values);
                     }
                 }
             }
