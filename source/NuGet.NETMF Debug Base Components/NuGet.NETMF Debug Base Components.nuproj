@@ -22,7 +22,7 @@
   <Import Project="$(NuProjPath)\NuProj.props" Condition="Exists('$(NuProjPath)\NuProj.props')" />
   <PropertyGroup Label="Configuration">
     <Id>Microsoft.NetMicroFramework.Tools.DebugComponents</Id>
-    <Version>0.1.0-alpha03</Version>
+    <Version>0.1.0-alpha07</Version>
     <Title>.NET Micro Framework base components for debug</Title>
     <Authors>Eclo Solutions</Authors>
     <Owners>Eclo Solutions</Owners>

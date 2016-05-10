@@ -64,7 +64,7 @@ namespace Test_App_Windows_8
             // disable button
             (sender as Button).IsEnabled = false;
 
-            var mm = await App.NETMFUsbDebugClient.MFDevices[0].DebugEngine.MemoryMapAsync();
+            var mm = await App.NETMFUsbDebugClient.MFDevices[0].DebugEngine.GetMemoryMapAsync();
 
             Debug.WriteLine("");
             Debug.WriteLine("");

@@ -39,6 +39,12 @@ namespace Test_App_UWP
 
             var di = await App.NETMFUsbDebugClient.MFDevices[0].GetDeviceInfoAsync();
 
+            Debug.WriteLine("");
+            Debug.WriteLine("");
+            Debug.WriteLine(di.ToString());
+            Debug.WriteLine("");
+            Debug.WriteLine("");
+
             // enable button
             (sender as Button).IsEnabled = true;
         }
@@ -71,7 +77,7 @@ namespace Test_App_UWP
             // disable button
             (sender as Button).IsEnabled = false;
 
-            var mm = await App.NETMFUsbDebugClient.MFDevices[0].DebugEngine.MemoryMapAsync();
+            var mm = await App.NETMFUsbDebugClient.MFDevices[0].DebugEngine.GetMemoryMapAsync();
 
             Debug.WriteLine("");
             Debug.WriteLine("");
@@ -89,6 +95,7 @@ namespace Test_App_UWP
             (sender as Button).IsEnabled = false;
 
             var fm = await App.NETMFUsbDebugClient.MFDevices[0].DebugEngine.GetFlashSectorMapAsync();
+            //var fm = await App.NETMFUsbDebugClient.MFDevices[0].DebugEngine.GetAssembliesAsync();
 
             Debug.WriteLine("");
             Debug.WriteLine("");
