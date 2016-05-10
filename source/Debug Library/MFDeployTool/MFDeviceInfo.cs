@@ -13,6 +13,7 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+using Microsoft.SPOT.Debugger.WireProtocol;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -164,23 +165,55 @@ namespace Microsoft.NetMicroFramework.Tools.MFDeployTool.Engine
         {
             if (!Dbg.IsConnectedToTinyCLR) return false;
 
-            await m_self.DoForEachAppDomainAsync(
-                delegate (IAppDomainInfo adi)
-                {
-                    m_Domains.Add(adi);
-                }
-            );
+            // get app domains from device
+            await GetAppDomainsAsync();
 
-            await m_self.DoForEachAssemblyAsync(
-                delegate (IAssemblyInfo ai)
-                {
-                    m_AssemblyInfos.Add(ai);
-                }
-            );
+            // get assemblies from device
+            await GetAssembliesAsync();
 
             m_fValid = true;
 
             return true;
+        }
+
+        private async Task GetAppDomainsAsync()
+        {
+            if (Dbg.Capabilities.AppDomains)
+            {
+                Commands.Debugging_TypeSys_AppDomains.Reply domainsReply = await Dbg.GetAppDomainsAsync();
+                if (domainsReply != null)
+                {
+                    foreach (uint id in domainsReply.m_data)
+                    {
+                        Commands.Debugging_Resolve_AppDomain.Reply reply = await Dbg.ResolveAppDomainAsync(id);
+                        if (reply != null)
+                        {
+                            m_Domains.Add(new AppDomainInfo(id, reply));
+                        }
+                    }
+                }
+            }
+        }
+
+        private async Task GetAssembliesAsync()
+        {
+            List<Commands.Debugging_Resolve_Assembly> reply = await Dbg.ResolveAllAssembliesAsync();
+
+            if (reply != null)
+                foreach (Commands.Debugging_Resolve_Assembly resolvedAssm in reply)
+                {
+                    AssemblyInfoFromResolveAssembly ai = new AssemblyInfoFromResolveAssembly(resolvedAssm);
+
+                    foreach (IAppDomainInfo adi in m_Domains)
+                    {
+                        if (Array.IndexOf<uint>(adi.AssemblyIndicies, ai.Index) != -1)
+                        {
+                            ai.AddDomain(adi);
+                        }
+                    }
+
+                    m_AssemblyInfos.Add(ai);
+                }
         }
 
         private Microsoft.SPOT.Debugger.Engine Dbg { get { return m_self.DebugEngine; } }

@@ -32,7 +32,7 @@ namespace Microsoft.NetMicroFramework.Tools
         /// <summary>
         /// Transport to the device. 
         /// </summary>
-        public TransportType Transport { get; protected set; }
+        public TransportType Transport { get; set; }
 
         public object DeviceObject { get; set; }
 
@@ -76,56 +76,5 @@ namespace Microsoft.NetMicroFramework.Tools
             return PingConnectionType.NoConnection;
         }
 
-        public delegate void AppDomainAction(IAppDomainInfo adi);
-
-        public async Task DoForEachAppDomainAsync(AppDomainAction appDomainAction)
-        {
-            if (DebugEngine.Capabilities.AppDomains)
-            {
-                Commands.Debugging_TypeSys_AppDomains.Reply domainsReply = await DebugEngine.GetAppDomainsAsync();
-                if (domainsReply != null)
-                {
-                    foreach (uint id in domainsReply.m_data)
-                    {
-                        Commands.Debugging_Resolve_AppDomain.Reply reply = await DebugEngine.ResolveAppDomainAsync(id);
-                        if (reply != null)
-                        {
-                            appDomainAction(new AppDomainInfo(id, reply));
-                        }
-                    }
-                }
-            }
-        }
-
-        public delegate void AssemblyAction(IAssemblyInfo ai);
-        public async Task DoForEachAssemblyAsync(AssemblyAction assemblyAction)
-        {
-            List<IAppDomainInfo> theDomains = new List<IAppDomainInfo>();
-
-            await DoForEachAppDomainAsync(
-                delegate (IAppDomainInfo adi)
-                {
-                    theDomains.Add(adi);
-                }
-            );
-
-            Commands.Debugging_Resolve_Assembly[] reply = await DebugEngine.ResolveAllAssembliesAsync();
-
-            if (reply != null)
-                foreach (Commands.Debugging_Resolve_Assembly resolvedAssm in reply)
-                {
-                    AssemblyInfoFromResolveAssembly ai = new AssemblyInfoFromResolveAssembly(resolvedAssm);
-
-                    foreach (IAppDomainInfo adi in theDomains)
-                    {
-                        if (Array.IndexOf<uint>(adi.AssemblyIndicies, ai.Index) != -1)
-                        {
-                            ai.AddDomain(adi);
-                        }
-                    }
-
-                    assemblyAction(ai);
-                }
-        }
     }
 }

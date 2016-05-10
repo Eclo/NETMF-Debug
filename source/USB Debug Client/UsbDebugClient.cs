@@ -229,9 +229,11 @@ namespace Microsoft.NetMicroFramework.Tools.UsbDebug
                 //     device information
 
                 match = new MFDevice<UsbDevice>();
+                match.Transport = TransportType.Usb;
                 match.Device.DeviceInformation = new UsbDeviceInformation(deviceInformation, deviceSelector);
                 match.Device.Parent = this;
                 match.Device.DebugEngine = new Engine(this, match);
+                match.Device.Transport = TransportType.Usb;
 
                 // Add the new element to the end of the list of devices
                 MFDevices.Add(match.Device as MFDeviceBase);
@@ -242,6 +244,7 @@ namespace Microsoft.NetMicroFramework.Tools.UsbDebug
                 {
                     // the device description format is kept to maintain backwards compatibility
                     match.Device.Description = EventHandlerForUsbDevice.Current.DeviceInformation.Name + "_" + await GetDeviceDescriptor(5).ConfigureAwait(false);
+                    match.Description = match.Device.Description;
 
                     Debug.WriteLine("Add new USB device to list: " + match.Description + " @ " + deviceSelector);
 
@@ -255,8 +258,6 @@ namespace Microsoft.NetMicroFramework.Tools.UsbDebug
         {
             // Removes the device entry from the internal list; therefore the UI
             var deviceEntry = FindDevice(deviceId);
-
-            Debug.WriteLine("Remove USB device from list: " + deviceEntry.Device.Description + " @ " + deviceEntry.Device.DeviceInformation.DeviceSelector);
 
             MFUsbDevices.Remove(deviceEntry);
         }
