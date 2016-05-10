@@ -164,19 +164,19 @@ namespace Microsoft.NetMicroFramework.Tools.MFDeployTool.Engine
         {
             if (!Dbg.IsConnectedToTinyCLR) return false;
 
-            //await m_self.DoForEachAppDomainAsync(
-            //    delegate (IAppDomainInfo adi)
-            //    {
-            //        m_Domains.Add(adi);
-            //    }
-            //);
+            await m_self.DoForEachAppDomainAsync(
+                delegate (IAppDomainInfo adi)
+                {
+                    m_Domains.Add(adi);
+                }
+            );
 
-            //await m_self.DoForEachAssemblyAsync(
-            //    delegate (IAssemblyInfo ai)
-            //    {
-            //        m_AssemblyInfos.Add(ai);
-            //    }
-            //);
+            await m_self.DoForEachAssemblyAsync(
+                delegate (IAssemblyInfo ai)
+                {
+                    m_AssemblyInfos.Add(ai);
+                }
+            );
 
             m_fValid = true;
 

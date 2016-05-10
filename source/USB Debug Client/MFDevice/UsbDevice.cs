@@ -51,22 +51,19 @@ namespace Microsoft.NetMicroFramework.Tools
             Transport = TransportType.Usb;
         }
 
-        public bool Disconnect()
-        {
-            return true;
-        }
-
         /// <summary>
         /// Connect to NETMF device
         /// </summary>
-        /// <returns></returns>
+        /// <returns>True if operation is successful</returns>
         public Task<bool> ConnectAsync()
         {
             return Parent.ConnectDeviceAsync(this);
         }
 
-
-        public void DisconnectDevice()
+        /// <summary>
+        /// Disconnect NETMF device
+        /// </summary>
+        public void Disconnect()
         {
             Parent.DisconnectDevice(this);
         }

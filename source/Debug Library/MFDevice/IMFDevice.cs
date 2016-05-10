@@ -21,6 +21,6 @@ namespace Microsoft.NetMicroFramework.Tools
     {
         Task<bool> ConnectAsync();
 
-        void DisconnectDevice();
+        void Disconnect();
     }
 }

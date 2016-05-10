@@ -161,7 +161,7 @@ namespace Microsoft.SPOT.Debugger
                     if (msg == null)
                     {
                         // disconnect device
-                        Device.DisconnectDevice();
+                        Device.Disconnect();
 
                         // update flag
                         IsConnected = false;
@@ -204,7 +204,7 @@ namespace Microsoft.SPOT.Debugger
             if (connectionSource != ConnectionSource.Unknown && connectionSource != ConnectionSource)
             {
                 // disconnect device
-                Device.DisconnectDevice();
+                Device.Disconnect();
 
                 // update flag
                 IsConnected = false;
@@ -214,6 +214,17 @@ namespace Microsoft.SPOT.Debugger
             }
 
             return true;
+        }
+
+        public void Disconnect()
+        {
+            // better do this inside of try/catch because we can't be sure that the device is actually connected or that the 
+            // operation can be successful
+            try
+            {
+                Device.Disconnect();
+            }
+            catch { }
         }
 
         public DateTime LastActivity
@@ -243,7 +254,7 @@ namespace Microsoft.SPOT.Debugger
                     {
                         if (IsConnected)
                         {
-                            Device.DisconnectDevice();
+                            Device.Disconnect();
                         }
                     }
                     catch { }

@@ -19,13 +19,14 @@ using System.Threading.Tasks;
 
 namespace Microsoft.NetMicroFramework.Tools
 {
-    public class MFDevice<T> : MFDeviceBase, IDisposable where T : new()
+    public class MFDevice<T> : MFDeviceBase, IDisposable, IMFDevice where T : new()
     {
         public T Device { get; set; }
 
         public MFDevice()
         {
             Device = new T();
+            DeviceObject = Device;
         }
 
         #region Disposable implementation
@@ -46,7 +47,7 @@ namespace Microsoft.NetMicroFramework.Tools
                     try
                     {
                         // release managed components
-                        ((IMFDevice)Device).DisconnectDevice();
+                        ((IMFDevice)Device).Disconnect();
                     }
                     catch { }
                 }
@@ -66,5 +67,22 @@ namespace Microsoft.NetMicroFramework.Tools
         }
 
         #endregion
+
+        /// <summary>
+        /// Connect to NETMF device
+        /// </summary>
+        /// <returns>True if operation is successful</returns>
+        public async Task<bool> ConnectAsync()
+        {
+            return await ((IMFDevice)Device).ConnectAsync();
+        }
+
+        /// <summary>
+        /// Disconnect NETMF device
+        /// </summary>
+        public void Disconnect()
+        {
+            ((IMFDevice)Device).Disconnect();
+        }
     }
 }
