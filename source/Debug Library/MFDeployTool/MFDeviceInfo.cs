@@ -259,36 +259,38 @@ namespace Microsoft.NetMicroFramework.Tools.MFDeployTool.Engine
 
         public override string ToString()
         {
-            if (!m_fValid)
+            if (m_fValid)
             {
-                return "DeviceInfo is not valid!";
-            }
-            else
-            {
-                StringBuilder output = new StringBuilder();
-
-                output.AppendLine("DeviceInfo:");
-                output.AppendLine(String.Format("  HAL build info: {0}, {1}", HalBuildVersion.ToString(), HalBuildInfo.TrimEnd('\0')));
-                output.AppendLine(String.Format("  OEM Product codes (vendor, model, SKU): {0}, {1}, {2}", OEM.ToString(), Model.ToString(), SKU.ToString()));
-                output.AppendLine("  Serial Numbers (module, system):");
-                output.AppendLine("    " + ModuleSerialNumber?.TrimEnd('\0'));
-                output.AppendLine("    " + SystemSerialNumber?.TrimEnd('\0'));
-                output.AppendLine(String.Format("  Solution Build Info: {0}, {1}", SolutionBuildVersion?.ToString(), SolutionBuildInfo?.TrimEnd('\0')));
-
-                output.AppendLine("  AppDomains:");
-                foreach (IAppDomainInfo adi in AppDomains)
+                try
                 {
-                    output.AppendLine(String.Format("    {0}, id={1}", adi.Name, adi.ID));
-                }
+                    StringBuilder output = new StringBuilder();
 
-                output.AppendLine("  Assemblies:");
-                foreach (IAssemblyInfo ai in Assemblies)
-                {
-                    output.AppendLine(String.Format("    {0},{1}", ai.Name, ai.Version));
-                }
+                    output.AppendLine("DeviceInfo:");
+                    output.AppendLine(String.Format("  HAL build info: {0}, {1}", HalBuildVersion.ToString(), HalBuildInfo.TrimEnd('\0')));
+                    output.AppendLine(String.Format("  OEM Product codes (vendor, model, SKU): {0}, {1}, {2}", OEM.ToString(), Model.ToString(), SKU.ToString()));
+                    output.AppendLine("  Serial Numbers (module, system):");
+                    output.AppendLine("    " + ModuleSerialNumber?.TrimEnd('\0'));
+                    output.AppendLine("    " + SystemSerialNumber?.TrimEnd('\0'));
+                    output.AppendLine(String.Format("  Solution Build Info: {0}, {1}", SolutionBuildVersion?.ToString(), SolutionBuildInfo?.TrimEnd('\0')));
 
-                return output.ToString();
+                    output.AppendLine("  AppDomains:");
+                    foreach (IAppDomainInfo adi in AppDomains)
+                    {
+                        output.AppendLine(String.Format("    {0}, id={1}", adi.Name, adi.ID));
+                    }
+
+                    output.AppendLine("  Assemblies:");
+                    foreach (IAssemblyInfo ai in Assemblies)
+                    {
+                        output.AppendLine(String.Format("    {0},{1}", ai.Name, ai.Version));
+                    }
+
+                    return output.ToString();
+                }
+                catch { };
             }
+
+            return "DeviceInfo is not valid!";
         }
     }
 }
