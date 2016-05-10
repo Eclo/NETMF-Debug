@@ -34,7 +34,7 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
     public class Converter
     {
         // list of processed fields on a type
-        /* Because of the way the reflection is implemented in WinRT there is no way of determine if a field has already being deserialized.
+        /* Because of the way the reflection is implemented in WinRT there is no way of determine if a field has already being serialized/deserialized.
         So we need to keep track of the fields that have been processed for each type so they are not processed twice which will cause wrong data,  
         premature running out of buffer data and/or trying to read past the end of the in buffer         */
         List<string> processedTypeFields;
@@ -93,9 +93,13 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
 
             while (t != null)
             {
-                foreach (FieldInfo f in t.GetRuntimeFields().Where(f => f.Attributes == FieldAttributes.Public))
+                foreach (FieldInfo f in t.GetRuntimeFields().Where(f => (f.Attributes == FieldAttributes.Public || f.Attributes == FieldAttributes.Private)))
                 {
-                    InternalSerializeInstance(writer, f.GetValue(o));
+                    // check if field has IgnoreDataMember attribute
+                    if (f.CustomAttributes.Where(ca => ca.AttributeType == typeof(IgnoreDataMemberAttribute)).Count() == 0)
+                    {
+                        InternalSerializeInstance(writer, f.GetValue(o));
+                    }
                 }
 
                 t = t.GetTypeInfo().BaseType;
@@ -185,28 +189,33 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
                 InternalDeserializeFieldsHelper(reader, o, t.GetTypeInfo().BaseType);
             }
 
-            foreach (FieldInfo f in t.GetRuntimeFields().Where(f => (f.Attributes == FieldAttributes.Public || f.Attributes == FieldAttributes.Private) && f.Attributes != FieldAttributes.NotSerialized))
+            foreach (FieldInfo f in t.GetRuntimeFields().Where(f => (f.Attributes == FieldAttributes.Public || f.Attributes == FieldAttributes.Private)))
             {
-                // check if this field has been processed
-                if (!processedTypeFields.Contains(f.Name))
+                // check if field has IgnoreDataMember attribute
+                if (f.CustomAttributes.Where(ca => ca.AttributeType == typeof(IgnoreDataMemberAttribute)).Count() == 0)
                 {
-                    Type ft = f.FieldType;
-                    //Debug.WriteLine("Deserializing field " + f.Name + " of type " + ft.Name);
 
-                    // add field name to list of processed fields
-                    // see list declaration
-                    processedTypeFields.Add(f.Name);
+                    // check if this field has been processed
+                    if (!processedTypeFields.Contains(f.Name))
+                    {
+                        Type ft = f.FieldType;
+                        //Debug.WriteLine("Deserializing field " + f.Name + " of type " + ft.Name);
 
-                    object objValue = f.GetValue(o);
+                        // add field name to list of processed fields
+                        // see list declaration
+                        processedTypeFields.Add(f.Name);
 
-                    objValue = InternalDeserializeInstance(reader, objValue, ft);
+                        object objValue = f.GetValue(o);
 
-                    f.SetValue(o, objValue);
-                }
-                else
-                {
-                    // skipping this field
-                    //Debug.WriteLine("Skipping " + f.Name );
+                        objValue = InternalDeserializeInstance(reader, objValue, ft);
+
+                        f.SetValue(o, objValue);
+                    }
+                    else
+                    {
+                        // skipping this field
+                        //Debug.WriteLine("Skipping " + f.Name );
+                    }
                 }
             }
         }

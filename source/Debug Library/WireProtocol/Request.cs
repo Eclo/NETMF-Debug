@@ -187,6 +187,8 @@ namespace Microsoft.SPOT.Debugger
                 await Task.Delay(200 * retryCounter);
             }
 
+            Debug.WriteLine("exceeded attempts count...");
+
             return null;
         }
     }

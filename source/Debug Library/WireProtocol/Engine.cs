@@ -310,7 +310,7 @@ namespace Microsoft.SPOT.Debugger
             return await request.PerformRequestAsync(new CancellationToken());
         }
 
-        private async Task<IncomingMessage[]> PerformRequestBatchAsync(OutgoingMessage[] messages, int retries = 2, int timeout = 1000)
+        private async Task<IncomingMessage[]> PerformRequestBatchAsync(OutgoingMessage[] messages, int retries = 3, int timeout = 1000)
         {
             int cMessage = messages.Length;
             IncomingMessage[] replies = new IncomingMessage[cMessage];
