@@ -24,6 +24,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.Foundation.Metadata;
 using Windows.Storage.Streams;
+using Debug_Library.WireProtocol;
 
 namespace Microsoft.SPOT.Debugger
 {
@@ -42,6 +43,7 @@ namespace Microsoft.SPOT.Debugger
 
         private static SemaphoreSlim semaphore;
 
+        public event EventHandler<StringEventArgs> SpuriousCharactersReceived;
 
         //event NoiseEventHandler m_eventNoise;
         //event MessageEventHandler m_eventMessage;
@@ -856,6 +858,8 @@ namespace Microsoft.SPOT.Debugger
         }
 
         Dictionary<int, uint[]> m_updateMissingPktTbl = new Dictionary<int, uint[]>();
+
+       
 
         /// <summary>
         /// 

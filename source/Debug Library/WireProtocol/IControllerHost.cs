@@ -16,6 +16,7 @@
 using Microsoft.NetMicroFramework.Tools;
 using System;
 using System.Threading.Tasks;
+using Debug_Library.WireProtocol;
 
 namespace Microsoft.SPOT.Debugger.WireProtocol
 {
@@ -26,6 +27,8 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
         bool IsConnected { get; }
 
         void SpuriousCharacters(byte[] buf, int offset, int count);
+
+        event EventHandler<StringEventArgs> SpuriousCharactersReceived;
 
         void ProcessExited();
     }
