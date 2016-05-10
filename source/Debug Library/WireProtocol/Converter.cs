@@ -16,6 +16,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -32,6 +33,12 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
 
     public class Converter
     {
+        // list of processed fields on a type
+        /* Because of the way the reflection is implemented in WinRT there is no way of determine if a field has already being deserialized.
+        So we need to keep track of the fields that have been processed for each type so they are not processed twice which will cause wrong data,  
+        premature running out of buffer data and/or trying to read past the end of the in buffer         */
+        List<string> processedTypeFields;
+
         public Converter() : this(null)
         {
         }
@@ -173,25 +180,43 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
 
         private void InternalDeserializeFieldsHelper(BinaryReader reader, object o, Type t)
         {
-            if (t.GetTypeInfo().BaseType != null)
+            if (t.GetTypeInfo().BaseType != typeof(Object))
             {
                 InternalDeserializeFieldsHelper(reader, o, t.GetTypeInfo().BaseType);
             }
 
-            foreach (FieldInfo f in t.GetRuntimeFields().Where(f => f.Attributes == FieldAttributes.Public))
+            foreach (FieldInfo f in t.GetRuntimeFields().Where(f => (f.Attributes == FieldAttributes.Public || f.Attributes == FieldAttributes.Private) && f.Attributes != FieldAttributes.NotSerialized))
             {
-                Type ft = f.FieldType;
-                object objValue = f.GetValue(o);
+                // check if this field has been processed
+                if (!processedTypeFields.Contains(f.Name))
+                {
+                    Type ft = f.FieldType;
+                    //Debug.WriteLine("Deserializing field " + f.Name + " of type " + ft.Name);
 
-                objValue = InternalDeserializeInstance(reader, objValue, ft);
+                    // add field name to list of processed fields
+                    // see list declaration
+                    processedTypeFields.Add(f.Name);
 
-                f.SetValue(o, objValue);
+                    object objValue = f.GetValue(o);
+
+                    objValue = InternalDeserializeInstance(reader, objValue, ft);
+
+                    f.SetValue(o, objValue);
+                }
+                else
+                {
+                    // skipping this field
+                    //Debug.WriteLine("Skipping " + f.Name );
+                }
             }
         }
 
         private void InternalDeserializeFields(BinaryReader reader, object o)
         {
             Type t = o.GetType();
+
+            // reset processed type fields list
+            processedTypeFields = new List<string>();
 
             if (t.IsArray)
             {
@@ -210,6 +235,8 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
             {
                 //This allows PrepareForDeserialize to subclass the expected type if appropriate
                 t = o.GetType();
+
+                //Debug.WriteLine("Deserializing instance " + t.Name);
             }
 
             switch (TypeExtensions.GetTypeCode(t))
@@ -247,6 +274,12 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
                         for (int i = 0; i < arr.Length; i++)
                         {
                             object objValue = arr.GetValue(i);
+
+                            //if(reader.BaseStream.Position >= reader.BaseStream.Length)
+                            //{
+                            //    Debug.WriteLine("######################################################");
+                            //    Debug.WriteLine("################ trying to read after end of stream ");
+                            //}
 
                             objValue = InternalDeserializeInstance(reader, objValue, t.GetElementType());
                             arr.SetValue(objValue, i);
