@@ -142,6 +142,7 @@
     <Compile Include="WireProtocol\Converter.cs" />
     <Compile Include="WireProtocol\Engine.cs" />
     <Compile Include="Extensions\EngineExtensions.cs" />
+    <Compile Include="WireProtocol\RebootTime.cs" />
     <Compile Include="WireProtocol\PublicKeyIndex.cs" />
     <Compile Include="WireProtocol\Flags.cs" />
     <Compile Include="WireProtocol\IController.cs" />

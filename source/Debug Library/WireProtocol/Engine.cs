@@ -71,7 +71,7 @@ namespace Microsoft.SPOT.Debugger
         //bool m_fProcessExited;
 
         bool m_fThrowOnCommunicationFailure;
-        //RebootTime m_RebootTime;
+        RebootTime m_RebootTime;
         internal IMFDevice Device;
 
         public Engine(IPort pd, IMFDevice device)
@@ -102,7 +102,7 @@ namespace Microsoft.SPOT.Debugger
             //default capabilities, used until clr can be queried.
             Capabilities = new CLRCapabilities();
 
-            //m_RebootTime = new RebootTime();
+            m_RebootTime = new RebootTime();
         }
 
         private void InitializeLocal(IPort pd, IMFDevice device)
@@ -128,13 +128,13 @@ namespace Microsoft.SPOT.Debugger
 
         public bool IsTargetBigEndian { get; internal set; }
 
-        [Deprecated("Please use ConnectAsync().", Windows.Foundation.Metadata.DeprecationType.Deprecate, 1)]
+        [Deprecated("Please use ConnectAsync().", DeprecationType.Deprecate, 1)]
         public async Task<bool> TryToConnectAsync(int retries, int timeout)
         {
             return await ConnectAsync(retries, timeout, false, ConnectionSource.Unknown).ConfigureAwait(false);
         }
 
-        [Windows.Foundation.Metadata.Deprecated("Please use ConnectAsync().", Windows.Foundation.Metadata.DeprecationType.Deprecate, 1)]
+        [Deprecated("Please use ConnectAsync().", DeprecationType.Deprecate, 1)]
         public async Task<bool> TryToConnectAsync(int retries, int timeout, bool force, ConnectionSource connectionSource)
         {
             return await ConnectAsync(retries, timeout, false, ConnectionSource.Unknown).ConfigureAwait(false);
@@ -643,19 +643,19 @@ namespace Microsoft.SPOT.Debugger
 
         }
 
-        //public async Task<bool> TryToReconnectAsync(bool fSoftReboot)
-        //{
-        //    if (!await TryToConnectAsync(m_RebootTime.Retries, m_RebootTime.WaitMs(fSoftReboot), true, ConnectionSource.Unknown).ConfigureAwait(false))
-        //    {
-        //        if (m_fThrowOnCommunicationFailure)
-        //        {
-        //            throw new ApplicationException("Could not reconnect to TinyCLR");
-        //        }
-        //        return false;
-        //    }
+        public async Task<bool> ReconnectAsync(bool fSoftReboot)
+        {
+            if (!await ConnectAsync(m_RebootTime.Retries, m_RebootTime.WaitMs(fSoftReboot), true, ConnectionSource.Unknown).ConfigureAwait(false))
+            {
+                if (m_fThrowOnCommunicationFailure)
+                {
+                    throw new Exception("Could not reconnect to TinyCLR");
+                }
+                return false;
+            }
 
-        //    return true;
-        //}
+            return true;
+        }
 
         public async Task<uint> GetExecutionBasePtrAsync()
         {
