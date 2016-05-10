@@ -27,7 +27,7 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
         //internal byte[] marker_Packet = Encoding.UTF8.GetBytes(Packet.MARKER_PACKET_V1);
 
         private string marker;
-        private IControllerHostLocal m_app;
+        public IControllerHostLocal App { get; internal set; }
 
         private int lastOutboundMessage;
 
@@ -55,7 +55,7 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
         public Controller(string marker, IControllerHostLocal app)
         {
             this.marker = marker;
-            m_app = app;
+            App = app;
 
             Random random = new Random();
 
@@ -117,7 +117,7 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
 
         public async Task<uint> SendRawBufferAsync(byte[] buffer, CancellationToken cancellationToken)
         {
-            return await m_app.SendBufferAsync(buffer, cancellationToken).ConfigureAwait(false);
+            return await App.SendBufferAsync(buffer, cancellationToken).ConfigureAwait(false);
         }
 
         internal async Task<int> ReadBufferAsync(byte[] buffer, int offset, int bytesToRead, TimeSpan waitTimeout, CancellationToken cancellationToken)
@@ -143,7 +143,7 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
                 }
 
                 // read next chunk of data async
-                var readResult = await m_app.ReadBufferAsync((uint)bytesToRead, waitTimeout, cancellationToken).ConfigureAwait(false);
+                var readResult = await App.ReadBufferAsync((uint)bytesToRead, waitTimeout, cancellationToken).ConfigureAwait(false);
 
                 //Debug.WriteLine("read {0} bytes", readResult.UnconsumedBufferLength);
 

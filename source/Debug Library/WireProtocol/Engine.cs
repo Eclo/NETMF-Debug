@@ -24,7 +24,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.Foundation.Metadata;
 using Windows.Storage.Streams;
-using Debug_Library.WireProtocol;
 
 namespace Microsoft.SPOT.Debugger
 {
@@ -363,7 +362,10 @@ namespace Microsoft.SPOT.Debugger
 
         public void SpuriousCharacters(byte[] buf, int offset, int count)
         {
-            throw new NotImplementedException();
+            if(SpuriousCharactersReceived != null)
+            {
+                SpuriousCharactersReceived.Invoke(this, new StringEventArgs(Encoding.Unicode.GetString(buf, offset, count)));
+            }
         }
 
         public void ProcessExited()

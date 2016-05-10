@@ -134,7 +134,7 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
                                 break; // Partial match.
                             }
 
-                            //m_parent.App.SpuriousCharacters(m_raw.m_header, 0, 1);
+                            m_parent.App.SpuriousCharacters(m_raw.m_header, 0, 1);
 
                             Array.Copy(m_raw.m_header, 1, m_raw.m_header, 0, --m_rawPos);
                         }
