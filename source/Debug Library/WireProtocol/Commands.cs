@@ -16,6 +16,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace Microsoft.SPOT.Debugger.WireProtocol
@@ -1199,7 +1200,8 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
         public class Debugging_Resolve_Assembly
         {
             public uint m_idx = 0;
-            //[NonSerialized]
+
+            [IgnoreDataMemberAttribute]
             public Reply m_reply;
 
             public struct Version
@@ -1227,9 +1229,9 @@ namespace Microsoft.SPOT.Debugger.WireProtocol
                 public Version m_version;
                 public byte[] m_nameBuffer = new byte[512]; // char
 
-                //[NonSerialized]
+                [IgnoreDataMemberAttribute]
                 private string m_name;
-                //[NonSerialized]
+                [IgnoreDataMemberAttribute]
                 private string m_path;
 
                 private void EnsureName()
