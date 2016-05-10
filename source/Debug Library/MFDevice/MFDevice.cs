@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.NetMicroFramework.Tools
 {
-    public class MFDevice<T> : MFDeviceBase, IDisposable, IMFDevice where T : new()
+    public class MFDevice<T> : MFDeviceBase, IDisposable where T : new()
     {
         public T Device { get; set; }
 
@@ -43,8 +43,12 @@ namespace Microsoft.NetMicroFramework.Tools
             {
                 if (disposing)
                 {
-                    // release managed components
-                    //Disconnect();
+                    try
+                    {
+                        // release managed components
+                        ((IMFDevice)Device).DisconnectDevice();
+                    }
+                    catch { }
                 }
 
                 disposed = true;
@@ -62,15 +66,5 @@ namespace Microsoft.NetMicroFramework.Tools
         }
 
         #endregion
-
-        public async Task<bool> ConnectAsync()
-        {
-            return await ((IMFDevice)Device).ConnectAsync();
-        }
-
-        public void DisconnectDevice()
-        {
-            ((IMFDevice)Device).DisconnectDevice();
-        }
     }
 }

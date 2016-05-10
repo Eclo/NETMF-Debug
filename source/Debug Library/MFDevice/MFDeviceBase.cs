@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.NetMicroFramework.Tools
 {
-    public class MFDeviceBase
+    public class MFDeviceBase : IMFDevice
     {
         /// <summary>
         /// .NETMF debug engine
@@ -128,6 +128,14 @@ namespace Microsoft.NetMicroFramework.Tools
                 }
         }
 
+        public async Task<bool> ConnectAsync()
+        {
+            return await DebugEngine.Device.ConnectAsync();
+        }
 
+        public void DisconnectDevice()
+        {
+            DebugEngine.Device.DisconnectDevice();
+        }
     }
 }

@@ -70,7 +70,7 @@ namespace Microsoft.SPOT.Debugger
 
         bool m_fThrowOnCommunicationFailure;
         //RebootTime m_RebootTime;
-        IMFDevice device;
+        internal IMFDevice Device;
 
         public Engine(IPort pd, IMFDevice device)
         {
@@ -108,7 +108,7 @@ namespace Microsoft.SPOT.Debugger
             m_portDefinition = pd;
             m_ctrl = new Controller(Packet.MARKER_PACKET_V1, this) ;
 
-            this.device = device;
+            this.Device = device;
 
             Initialize();
         }
@@ -148,7 +148,7 @@ namespace Microsoft.SPOT.Debugger
             if (force || IsConnected == false)
             {
                 // connect to device 
-                if (await device.ConnectAsync().ConfigureAwait(false))
+                if (await Device.ConnectAsync().ConfigureAwait(false))
                 {
 
                     Commands.Monitor_Ping cmd = new Commands.Monitor_Ping();
@@ -161,7 +161,7 @@ namespace Microsoft.SPOT.Debugger
                     if (msg == null)
                     {
                         // disconnect device
-                        device.DisconnectDevice();
+                        Device.DisconnectDevice();
 
                         // update flag
                         IsConnected = false;
@@ -204,7 +204,7 @@ namespace Microsoft.SPOT.Debugger
             if (connectionSource != ConnectionSource.Unknown && connectionSource != ConnectionSource)
             {
                 // disconnect device
-                device.DisconnectDevice();
+                Device.DisconnectDevice();
 
                 // update flag
                 IsConnected = false;
@@ -241,12 +241,10 @@ namespace Microsoft.SPOT.Debugger
                     // TODO: dispose managed state (managed objects).
                     try
                     {
-                        throw new NotImplementedException();
-
-                        //if (m_portDefinition.IsConnected)
-                        //{
-                        //    device.Disconnect();
-                        //}
+                        if (IsConnected)
+                        {
+                            Device.DisconnectDevice();
+                        }
                     }
                     catch { }
                 }
