@@ -127,18 +127,6 @@ namespace Microsoft.SPOT.Debugger
 
         public bool IsTargetBigEndian { get; internal set; }
 
-        [Deprecated("Please use ConnectAsync().", DeprecationType.Deprecate, 1)]
-        public async Task<bool> TryToConnectAsync(int retries, int timeout)
-        {
-            return await ConnectAsync(retries, timeout, false, ConnectionSource.Unknown).ConfigureAwait(false);
-        }
-
-        [Deprecated("Please use ConnectAsync().", DeprecationType.Deprecate, 1)]
-        public async Task<bool> TryToConnectAsync(int retries, int timeout, bool force, ConnectionSource connectionSource)
-        {
-            return await ConnectAsync(retries, timeout, false, ConnectionSource.Unknown).ConfigureAwait(false);
-        }
-
         public async Task<bool> ConnectAsync(int retries, int timeout)
         {
             return await ConnectAsync(retries, timeout, false, ConnectionSource.Unknown).ConfigureAwait(false);
@@ -383,13 +371,8 @@ namespace Microsoft.SPOT.Debugger
             return new OutgoingMessage(m_ctrl, CreateConverter(), cmd, flags, payload);
         }
 
-        #region Commands implementation
 
-        [Deprecated("Deprecated. Use GetMemoryMapAsync() instead.", DeprecationType.Deprecate, 1)]
-        public async Task<List<Commands.Monitor_MemoryMap.Range>> MemoryMapAsync()
-        {
-            return await GetMemoryMapAsync();
-        }
+        #region Commands implementation
 
         public async Task<List<Commands.Monitor_MemoryMap.Range>> GetMemoryMapAsync()
         {
@@ -408,12 +391,6 @@ namespace Microsoft.SPOT.Debugger
             }
 
             return null;
-        }
-
-        [Deprecated("Deprecated. Use GetDeploymentMapAsync() instead.", DeprecationType.Deprecate, 1)]
-        public async Task<List<Commands.Monitor_DeploymentMap.DeploymentData>> DeploymentMapAsync()
-        {
-            return await GetDeploymentMapAsync();
         }
 
         public async Task<List<Commands.Monitor_DeploymentMap.DeploymentData>> GetDeploymentMapAsync()
