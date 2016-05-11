@@ -18,7 +18,7 @@ using System.Reflection;
 
 namespace Microsoft.SPOT.Debugger
 {
-    public static class TypeExtensions
+    static class TypeExtensions
     {
         public static Type BaseType(this Type t)
         {

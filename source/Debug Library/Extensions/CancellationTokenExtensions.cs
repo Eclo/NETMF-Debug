@@ -18,7 +18,7 @@ using System.Threading;
 
 namespace Microsoft.SPOT.Debugger
 {
-    public static class CancellationTokenExtensions
+    static class CancellationTokenExtensions
     {
         /// <summary>
         /// Links cancellation token source with a set timeout cancellation token.
