@@ -41,16 +41,24 @@ namespace Microsoft.NetMicroFramework.Tools
         /// </summary>
         public string Description { get; set; }
 
+        /// <summary>
+        /// Detailed info about NETMF device hardware, solution and CLR.
+        /// </summary>
+        public IMFDeviceInfo DeviceInfo { get; internal set; } = null;
+
         public async Task<IMFDeviceInfo> GetDeviceInfoAsync()
         {
-            var deviceInfo = new MFDeviceInfo(this);
-
-            if(await deviceInfo.GetDeviceInfo())
+            // start by checking if we already have this available
+            if (!DeviceInfo.Valid)
             {
-                return deviceInfo;
+                // seems to be invalid so get it from device
+                var mfDeviceInfo = new MFDeviceInfo(this);
+                await mfDeviceInfo.GetDeviceInfo();
+
+                DeviceInfo = mfDeviceInfo;
             }
 
-            return deviceInfo;
+            return DeviceInfo;
         }
 
         /// <summary>
