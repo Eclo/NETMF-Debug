@@ -127,12 +127,7 @@ namespace Microsoft.SPOT.Debugger
 
         public bool IsTargetBigEndian { get; internal set; }
 
-        public async Task<bool> ConnectAsync(int retries, int timeout)
-        {
-            return await ConnectAsync(retries, timeout, false, ConnectionSource.Unknown).ConfigureAwait(false);
-        }
-
-        public async Task<bool> ConnectAsync(int retries, int timeout, bool force, ConnectionSource connectionSource)
+        public async Task<bool> ConnectAsync(int retries, int timeout, bool force = false, ConnectionSource connectionSource = ConnectionSource.Unknown)
         {
             if (force || IsConnected == false)
             {
