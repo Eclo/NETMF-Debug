@@ -975,7 +975,7 @@ namespace Microsoft.SPOT.Debugger
             return false;
         }
 
-        public async Task<bool> AddPacket(int updateHandle, uint packetIndex, byte[] packetData, uint packetValidation)
+        public async Task<bool> AddPacketAsync(int updateHandle, uint packetIndex, byte[] packetData, uint packetValidation)
         {
             if (!m_updateMissingPktTbl.ContainsKey(updateHandle))
             {
