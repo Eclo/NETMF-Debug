@@ -38,7 +38,7 @@ namespace Microsoft.NetMicroFramework.Tools.MFDeployTool.Engine
             get { return m_id; }
         }
 
-        public uint[] AssemblyIndicies
+        public uint[] AssemblyIndices
         {
             get { return m_reply.m_data; }
         }

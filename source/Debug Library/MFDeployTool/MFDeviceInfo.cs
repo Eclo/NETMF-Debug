@@ -206,7 +206,7 @@ namespace Microsoft.NetMicroFramework.Tools.MFDeployTool.Engine
 
                     foreach (IAppDomainInfo adi in m_Domains)
                     {
-                        if (Array.IndexOf<uint>(adi.AssemblyIndicies, ai.Index) != -1)
+                        if (Array.IndexOf<uint>(adi.AssemblyIndices, ai.Index) != -1)
                         {
                             ai.AddDomain(adi);
                         }

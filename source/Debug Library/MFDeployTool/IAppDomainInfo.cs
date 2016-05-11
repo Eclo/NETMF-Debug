@@ -19,6 +19,6 @@ namespace Microsoft.NetMicroFramework.Tools.MFDeployTool.Engine
     {
         string Name { get; }
         uint ID { get; }
-        uint[] AssemblyIndicies { get; }
+        uint[] AssemblyIndices { get; }
     }
 }
