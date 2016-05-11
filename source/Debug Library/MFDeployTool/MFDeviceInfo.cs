@@ -22,130 +22,6 @@ using Windows.Foundation.Metadata;
 
 namespace Microsoft.NetMicroFramework.Tools.MFDeployTool.Engine
 {
-    [Deprecated("Deprecated. Use MFDeviceInfo class instead.", DeprecationType.Deprecate, 1)]
-    class MFDeviceInfoImpl : IMFDeviceInfo
-    {
-        public IAppDomainInfo[] AppDomains
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public IAssemblyInfo[] Assemblies
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public string ClrBuildInfo
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public Version ClrBuildVersion
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public string HalBuildInfo
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public Version HalBuildVersion
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public byte Model
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public string ModuleSerialNumber
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public byte OEM
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public ushort SKU
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public string SolutionBuildInfo
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public Version SolutionBuildVersion
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public string SystemSerialNumber
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public Version TargetFrameworkVersion
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public bool Valid
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-    }
-
     class MFDeviceInfo : IMFDeviceInfo
     {
         private MFDeviceBase m_self;
@@ -298,24 +174,23 @@ namespace Microsoft.NetMicroFramework.Tools.MFDeployTool.Engine
                 {
                     StringBuilder output = new StringBuilder();
 
-                    output.AppendLine("DeviceInfo:");
-                    output.AppendLine(String.Format("  HAL build info: {0}, {1}", HalBuildVersion.ToString(), HalBuildInfo.TrimEnd('\0')));
-                    output.AppendLine(String.Format("  OEM Product codes (vendor, model, SKU): {0}, {1}, {2}", OEM.ToString(), Model.ToString(), SKU.ToString()));
-                    output.AppendLine("  Serial Numbers (module, system):");
-                    output.AppendLine("    " + ModuleSerialNumber?.TrimEnd('\0'));
-                    output.AppendLine("    " + SystemSerialNumber?.TrimEnd('\0'));
-                    output.AppendLine(String.Format("  Solution Build Info: {0}, {1}", SolutionBuildVersion?.ToString(), SolutionBuildInfo?.TrimEnd('\0')));
+                    output.AppendLine(String.Format("HAL build info: {0}, {1}", HalBuildVersion?.ToString(), HalBuildInfo?.TrimEnd('\0')));
+                    output.AppendLine(String.Format("OEM Product codes (vendor, model, SKU): {0}, {1}, {2}", OEM.ToString(), Model.ToString(), SKU.ToString()));
+                    output.AppendLine("Serial Numbers (module, system):");
+                    output.AppendLine("  " + ModuleSerialNumber?.TrimEnd('\0'));
+                    output.AppendLine("  " + SystemSerialNumber?.TrimEnd('\0'));
+                    output.AppendLine(String.Format("Solution Build Info: {0}, {1}", SolutionBuildVersion?.ToString(), SolutionBuildInfo?.TrimEnd('\0')));
 
-                    output.AppendLine("  AppDomains:");
+                    output.AppendLine("AppDomains:");
                     foreach (IAppDomainInfo adi in AppDomains)
                     {
-                        output.AppendLine(String.Format("    {0}, id={1}", adi.Name, adi.ID));
+                        output.AppendLine(String.Format("  {0}, id={1}", adi.Name, adi.ID));
                     }
 
-                    output.AppendLine("  Assemblies:");
+                    output.AppendLine("Assemblies:");
                     foreach (IAssemblyInfo ai in Assemblies)
                     {
-                        output.AppendLine(String.Format("    {0},{1}", ai.Name, ai.Version));
+                        output.AppendLine(String.Format("  {0}, {1}", ai.Name, ai.Version));
                     }
 
                     return output.ToString();
