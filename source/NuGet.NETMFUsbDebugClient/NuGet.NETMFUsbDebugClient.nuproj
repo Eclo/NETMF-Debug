@@ -19,7 +19,7 @@
   <Import Project="$(NuProjPath)\NuProj.props" Condition="Exists('$(NuProjPath)\NuProj.props')" />
   <PropertyGroup Label="Configuration">
     <Id>Microsoft.NetMicroFramework.Tools.UsbDebugClient</Id>
-    <Version>0.1.0-alpha13</Version>
+    <Version>0.1.0-alpha14</Version>
     <Title>USB debug client for .NET Micro Framework devices</Title>
     <Authors>Eclo Solutions</Authors>
     <Owners>Eclo Solutions</Owners>
