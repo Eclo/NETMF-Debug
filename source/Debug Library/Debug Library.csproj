@@ -116,10 +116,17 @@
     <Compile Include="MFDeployTool\IAssemblyInfo.cs" />
     <Compile Include="MFDeployTool\IAppDomainInfo.cs" />
     <Compile Include="MFDeployTool\AppDomainInfo.cs" />
+    <Compile Include="MFDeployTool\EraseOptions.cs" />
     <Compile Include="MFDevice\MFDeviceBase.cs" />
     <Compile Include="MFDevice\IMFDevice.cs" />
     <Compile Include="MFDevice\MFDevice.cs" />
     <Compile Include="MFDeployTool\MFDeviceInfo.cs" />
+    <Compile Include="MFDevice\MFDeviceNoResponseException.cs" />
+    <Compile Include="MFDevice\MFSignatureFailureException.cs" />
+    <Compile Include="MFDevice\MFTinyBooterConnectionFailureException.cs" />
+    <Compile Include="MFDevice\MFUserExitException.cs" />
+    <Compile Include="MFDevice\ProgressReport.cs" />
+    <Compile Include="MFDevice\SrecParseResult.cs" />
     <Compile Include="PortDefinitions\IPort.cs" />
     <Compile Include="PortDefinitions\PortBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -135,6 +142,7 @@
     <Compile Include="Runtime\RuntimeValue_Reflection.cs" />
     <Compile Include="Runtime\RuntimeValue_String.cs" />
     <Compile Include="Runtime\RuntimeValue_ValueType.cs" />
+    <Compile Include="SRecordFile.cs" />
     <Compile Include="WireProtocol\Commands.cs" />
     <Compile Include="WireProtocol\ConnectionSource.cs" />
     <Compile Include="WireProtocol\Controller.cs" />
