@@ -149,6 +149,7 @@
     <Compile Include="WireProtocol\ControllerBase.cs" />
     <Compile Include="WireProtocol\Converter.cs" />
     <Compile Include="WireProtocol\Engine.cs" />
+    <Compile Include="WireProtocol\FifoBuffer.cs" />
     <Compile Include="WireProtocol\RebootTime.cs" />
     <Compile Include="WireProtocol\PublicKeyIndex.cs" />
     <Compile Include="WireProtocol\Flags.cs" />

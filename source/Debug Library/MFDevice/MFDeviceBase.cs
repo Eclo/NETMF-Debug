@@ -380,11 +380,9 @@ namespace Microsoft.NetMicroFramework.Tools
 
             await DebugEngine.ConnectAsync(1, 100, true, ConnectionSource.Unknown);
 
-            bool sigExists = signatureFile.IsAvailable;
-
             List<SRecordFile.Block> blocks = new List<SRecordFile.Block>();
 
-            entryPoint = await SRecordFile.ParseAsync(srecFile, blocks, sigExists ? signatureFile : null);
+            entryPoint = await SRecordFile.ParseAsync(srecFile, blocks, signatureFile != null ? signatureFile : null);
 
             if (blocks.Count > 0)
             {
@@ -442,6 +440,7 @@ namespace Microsoft.NetMicroFramework.Tools
 
                         progress?.Report(new ProgressReport(value, total, string.Format("Deploying {0}...", srecFile.Name)));
                     }
+
                     if (DebugEngine.ConnectionSource != ConnectionSource.TinyCLR)
                     {
                         byte[] emptySig = new byte[128];

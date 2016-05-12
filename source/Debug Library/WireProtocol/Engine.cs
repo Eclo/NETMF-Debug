@@ -56,7 +56,7 @@ namespace Microsoft.SPOT.Debugger
         //Thread m_notificationThread;
         AutoResetEvent m_notifyEvent;
         //ArrayList m_notifyQueue;
-        //FifoBuffer m_notifyNoise;
+        FifoBuffer m_notifyNoise;
 
         AutoResetEvent m_rpcEvent;
         //ArrayList m_rpcQueue;
@@ -90,7 +90,7 @@ namespace Microsoft.SPOT.Debugger
             //m_requests = ArrayList.Synchronized(new ArrayList());
             //m_notifyQueue = ArrayList.Synchronized(new ArrayList());
 
-            //m_notifyNoise = new FifoBuffer();
+            m_notifyNoise = new FifoBuffer();
             m_typeSysLookup = new TypeSysLookup();
             //m_state = new State(this);
             //m_fProcessExited = false;
@@ -102,6 +102,31 @@ namespace Microsoft.SPOT.Debugger
             Capabilities = new CLRCapabilities();
 
             m_RebootTime = new RebootTime();
+
+            // start task to tx spurious characters
+            Task.Factory.StartNew(() => 
+            {
+                int read = 0;
+
+                while (true)
+                {
+                    m_notifyNoise.WaitHandle.WaitOne();
+
+                    while ((read = m_notifyNoise.Available) > 0)
+                    {
+                        byte[] buffer = new byte[m_notifyNoise.Available];
+
+                        m_notifyNoise.Read(buffer, 0, buffer.Length);
+
+                        if(SpuriousCharactersReceived != null)
+                        {
+                            SpuriousCharactersReceived.Invoke(this, new StringEventArgs(UTF8Encoding.UTF8.GetString(buffer, 0, buffer.Length)));
+                        }
+                    }
+
+                }
+            });
+
         }
 
         private void InitializeLocal(IPort pd, IMFDevice device)
@@ -345,10 +370,9 @@ namespace Microsoft.SPOT.Debugger
 
         public void SpuriousCharacters(byte[] buf, int offset, int count)
         {
-            if(SpuriousCharactersReceived != null)
-            {
-                SpuriousCharactersReceived.Invoke(this, new StringEventArgs(Encoding.Unicode.GetString(buf, offset, count)));
-            }
+            m_lastNoise = DateTime.Now;
+
+            m_notifyNoise.Write(buf, offset, count);
         }
 
         public void ProcessExited()
