@@ -165,21 +165,19 @@ namespace Microsoft.SPOT.Debugger
                     {
                         if (signatureFile != null)
                         {
-                            using (IRandomAccessStream readStream = await file.OpenAsync(FileAccessMode.Read))
+                            IBuffer buffer = await FileIO.ReadBufferAsync(signatureFile);
+
+                            using (DataReader dataReader = DataReader.FromBuffer(buffer))
                             {
-                                using (DataReader dataReader = new DataReader(readStream))
+                                if (dataReader.UnconsumedBufferLength != 128)
                                 {
-                                    if (readStream.Size != 128)
-                                    {
-                                        throw new ArgumentOutOfRangeException(String.Format("Signature is not 128 bytes long; it is {0} bytes long", readStream.Size));
-                                    }
-
-                                    byte[] signature = new byte[128];
-
-                                    dataReader.ReadBytes(signature);
-
-                                    bl.signature = signature;
+                                    throw new ArgumentOutOfRangeException(String.Format("Signature is not 128 bytes long; it is {0} bytes long", dataReader.UnconsumedBufferLength));
                                 }
+
+                                byte[] signature = new byte[128];
+
+                                dataReader.ReadBytes(signature);
+                                bl.signature = signature;
                             }
                         }
                         else
