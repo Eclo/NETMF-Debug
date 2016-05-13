@@ -114,6 +114,8 @@
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
+    <None Include="ER_CONFIG" />
+    <None Include="ER_CONFIG.sig" />
     <None Include="Test App Windows 8_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>

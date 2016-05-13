@@ -133,7 +133,7 @@ namespace Microsoft.NetMicroFramework.Tools
         {
             bool ret = false;
 
-            if (!await DebugEngine.ConnectAsync(2, 500, true)) return false;
+            if (!await DebugEngine.ConnectAsync(2, 500)) return false;
 
             if (DebugEngine != null)
             {
@@ -175,7 +175,7 @@ namespace Microsoft.NetMicroFramework.Tools
                     // check if cancellation was requested 
                     if (cancellationToken.IsCancellationRequested) return false;
 
-                    if (fConnected = await DebugEngine.ConnectAsync(0, 500, true, ConnectionSource.Unknown))
+                    if (fConnected = await DebugEngine.ConnectAsync(1, 1000, true, ConnectionSource.Unknown))
                     {
                         Commands.Monitor_Ping.Reply reply = await DebugEngine.GetConnectionSourceAsync();
 
@@ -378,7 +378,7 @@ namespace Microsoft.NetMicroFramework.Tools
                 }
             }
 
-            await DebugEngine.ConnectAsync(1, 100, true, ConnectionSource.Unknown);
+            await DebugEngine.ConnectAsync(1, 1000, false, ConnectionSource.Unknown);
 
             List<SRecordFile.Block> blocks = new List<SRecordFile.Block>();
 

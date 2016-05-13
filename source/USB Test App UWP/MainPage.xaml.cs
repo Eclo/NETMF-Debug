@@ -15,6 +15,8 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Microsoft.SPOT.Debugger;
 using System.Diagnostics;
+using Windows.Storage;
+using System.Threading;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -37,11 +39,11 @@ namespace Test_App_UWP
 
             bool connectResult = await App.NETMFUsbDebugClient.MFDevices[0].DebugEngine.ConnectAsync(3, 1000);
 
-            var di = await App.NETMFUsbDebugClient.MFDevices[0].GetDeviceInfoAsync();
+            //var di = await App.NETMFUsbDebugClient.MFDevices[0].GetDeviceInfoAsync();
 
             Debug.WriteLine("");
             Debug.WriteLine("");
-            Debug.WriteLine(di.ToString());
+            //Debug.WriteLine(di.ToString());
             Debug.WriteLine("");
             Debug.WriteLine("");
 
@@ -102,6 +104,24 @@ namespace Test_App_UWP
             Debug.WriteLine(fm.ToStringForOutput());
             Debug.WriteLine("");
             Debug.WriteLine("");
+
+            // enable button
+            (sender as Button).IsEnabled = true;
+        }
+
+        private async void deployFileButton_Click(object sender, RoutedEventArgs e)
+        {
+            // disable button
+            (sender as Button).IsEnabled = false;
+
+            // for this to work first need to copy the files ER_CONFIG and ER_CONFIG.sig to Documents folder
+            StorageFolder storageFolder = await KnownFolders.GetFolderForUserAsync(null /* current user */, KnownFolderId.DocumentsLibrary);
+
+            StorageFile srecFile = await storageFolder.TryGetItemAsync("ER_CONFIG") as StorageFile;
+            StorageFile sigFile = await storageFolder.TryGetItemAsync("ER_CONFIG.sig") as StorageFile;
+
+            var reply = await App.NETMFUsbDebugClient.MFDevices[0].DeployAsync(srecFile, sigFile, CancellationToken.None, null);
+
 
             // enable button
             (sender as Button).IsEnabled = true;

@@ -92,5 +92,10 @@ namespace Test_App_Windows_8
             // enable button
             (sender as Button).IsEnabled = true;
         }
+
+        private void deployFileButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

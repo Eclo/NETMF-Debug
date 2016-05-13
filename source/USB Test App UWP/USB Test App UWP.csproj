@@ -92,6 +92,8 @@
     <Content Include="ApplicationInsights.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="ER_CONFIG" />
+    <None Include="ER_CONFIG.sig" />
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
